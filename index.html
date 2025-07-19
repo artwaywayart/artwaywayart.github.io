@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบบันทึกข้อมูลรายชื่อคิว</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Sarabun', sans-serif; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+    <!-- หน้าแรก - แสดงข้อมูล -->
+    <div id="mainPage" class="container mx-auto px-4 py-8">
+        <div class="bg-white rounded-2xl shadow-xl p-8 max-w-4xl mx-auto">
+            <div class="text-center mb-6">
+                <div class="text-lg text-gray-600" id="currentDate"></div>
+                <div class="text-green-600 font-medium mt-2">หมดเวลาคิวเวลา 24.00 น. กรุณาแจ้งงานก่อนเวลาที่ระบุ</div>
+            </div>
+            
+            <div class="flex justify-between items-center mb-8">
+                <div class="flex items-center gap-4">
+                    <button id="backButtonMain" onclick="goBackToAdmin()" class="hidden bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg font-medium transition-colors">
+                        ← ย้อนกลับ
+                    </button>
+                    <h1 class="text-3xl font-bold text-gray-800">รายชื่อคิว</h1>
+                </div>
+                <button id="loginButton" onclick="showLogin()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors">
+                    ล็อกอิน
+                </button>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="w-full border-collapse">
+                    <thead>
+                        <tr class="bg-gray-50">
+                            <th class="border border-gray-200 px-4 py-3 text-left font-semibold text-gray-700">ชื่อเฟสบุ๊ค</th>
+                            <th class="border border-gray-200 px-4 py-3 text-left font-semibold text-gray-700">สถานะ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dataTable">
+                        <!-- ข้อมูลจะแสดงที่นี่ -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <div id="loadingData" class="text-center py-12 text-gray-500">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                <p class="text-lg">กำลังโหลดข้อมูล...</p>
+            </div>
+            
+            <div id="noData" class="text-center py-12 text-gray-500 hidden">
+                <div class="text-6xl mb-4">📋</div>
+                <p class="text-xl">ยังไม่มีข้อมูลในระบบ</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- หน้าล็อกอิน -->
+    <div id="loginPage" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">เข้าสู่ระบบ</h2>
+            <div class="mb-6">
+                <label class="block text-gray-700 font-medium mb-2">รหัสผ่าน</label>
+                <input type="password" id="passwordInput" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="กรุณาใส่รหัสผ่าน">
+            </div>
+            <div class="flex gap-3">
+                <button onclick="login()" class="flex-1 bg-green-600 hover:bg-green-700 text-white py-3 rounded-lg font-medium transition-colors">
+                    เข้าสู่ระบบ
+                </button>
+                <button onclick="hideLogin()" class="flex-1 bg-gray-500 hover:bg-gray-600 text-white py-3 rounded-lg font-medium transition-colors">
+                    ยกเลิก
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- หน้าเพิ่มข้อมูล -->
+    <div id="adminPage" class="hidden container mx-auto px-4 py-8">
+        <div class="bg-white rounded-2xl shadow-xl p-8 max-w-4xl mx-auto">
+            <div class="flex justify-between items-center mb-8">
+                <h1 class="text-3xl font-bold text-gray-800">จัดการข้อมูลรายชื่อคิว</h1>
+                <div class="flex gap-3">
+                    <button onclick="viewMainPage()" class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium transition-colors">
+                        ดูข้อมูล หน้าแรก
+                    </button>
+                    <button onclick="logout()" class="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-medium transition-colors">
+                        ออกจากระบบ
+                    </button>
+                </div>
+            </div>
+
+            <!-- ฟอร์มเพิ่มข้อมูล -->
+            <div class="bg-gray-50 rounded-xl p-6 mb-8">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">เพิ่มข้อมูลใหม่</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-gray-700 font-medium mb-2">ชื่อเฟสบุ๊ค</label>
+                        <input type="text" id="facebookName" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="กรุณาใส่ชื่อเฟสบุ๊ค">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 font-medium mb-2">สถานะ</label>
+                        <select id="statusSelect" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="รับคิวแล้ว">รับคิวแล้ว</option>
+                            <option value="กำลังตัดต่อ">กำลังตัดต่อ</option>
+                        </select>
+                    </div>
+                </div>
+                <button onclick="addData()" class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-medium transition-colors">
+                    บันทึกข้อมูล
+                </button>
+            </div>
+
+            <!-- ตารางข้อมูล -->
+            <div class="overflow-x-auto mb-6">
+                <table class="w-full border-collapse">
+                    <thead>
+                        <tr class="bg-gray-50">
+                            <th class="border border-gray-200 px-4 py-3 text-left font-semibold text-gray-700">ชื่อเฟสบุ๊ค</th>
+                            <th class="border border-gray-200 px-4 py-3 text-left font-semibold text-gray-700">สถานะ</th>
+                            <th class="border border-gray-200 px-4 py-3 text-left font-semibold text-gray-700">จัดการ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminDataTable">
+                        <!-- ข้อมูลจะแสดงที่นี่ -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="text-center">
+                <button onclick="clearAllData()" class="bg-red-600 hover:bg-red-700 text-white px-8 py-3 rounded-lg font-medium transition-colors">
+                    ล้างข้อมูลทั้งหมด
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ตัวแปรเก็บข้อมูล
+        let queueData = [];
+        let editingIndex = -1;
+        let isLoggedIn = false;
+
+        // URL ของ Google Apps Script
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyXTCJFHYvK7e00V8HEaO8EA3b_mIqXm3eAMSextQTiBU3dsEUHippz3O6Xle9z-WJoSA/exec';
+
+        // โหลดข้อมูลเมื่อเริ่มต้น
+        window.onload = function() {
+            displayCurrentDate();
+            loadDataFast(); // ใช้ฟังก์ชันโหลดเร็ว
+            checkLoginStatus();
+        };
+
+        // ฟังก์ชันตรวจสอบสถานะล็อกอิน
+        function checkLoginStatus() {
+            const loginStatus = localStorage.getItem('adminLoggedIn');
+            if (loginStatus === 'true') {
+                isLoggedIn = true;
+                document.getElementById('mainPage').classList.add('hidden');
+                document.getElementById('adminPage').classList.remove('hidden');
+                displayData();
+            }
+        }
+
+        // ฟังก์ชันแสดงวันที่ปัจจุบัน
+        function displayCurrentDate() {
+            const now = new Date();
+            const options = { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric',
+                timeZone: 'Asia/Bangkok'
+            };
+            const dateString = now.toLocaleDateString('th-TH', options);
+            document.getElementById('currentDate').textContent = dateString;
+        }
+
+        // ฟังก์ชันโหลดข้อมูลแบบเร็ว (ไม่แสดง loading)
+        function loadDataFast() {
+            const script = document.createElement('script');
+            script.src = SCRIPT_URL + '?callback=handleLoadData&action=load&' + new Date().getTime();
+            document.head.appendChild(script);
+            
+            // ลบ script element หลังจากใช้งาน
+            setTimeout(() => {
+                if (script.parentNode) {
+                    script.parentNode.removeChild(script);
+                }
+            }, 5000);
+        }
+
+        // ฟังก์ชันโหลดข้อมูลจาก Google Sheets
+        function loadData(showLoading = true) {
+            if (showLoading) {
+                Swal.fire({
+                    title: 'กำลังโหลดข้อมูล...',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+            }
+
+            const script = document.createElement('script');
+            script.src = SCRIPT_URL + '?callback=handleLoadData&action=load&' + new Date().getTime();
+            document.head.appendChild(script);
+            
+            // ลบ script element หลังจากใช้งาน
+            setTimeout(() => {
+                if (script.parentNode) {
+                    script.parentNode.removeChild(script);
+                }
+            }, 10000);
+        }
+
+        // รีเฟรชข้อมูลทุก 15 วินาที (เฉพาะหน้าแรก) - เร็วขึ้น
+        setInterval(() => {
+            if (!document.getElementById('mainPage').classList.contains('hidden')) {
+                loadDataFast(); // ใช้ฟังก์ชันโหลดเร็ว
+            }
+        }, 15000);
+
+        // ฟังก์ชันจัดการข้อมูลที่โหลดมา
+        function handleLoadData(data) {
+            if (Swal.isVisible()) {
+                Swal.close();
+            }
+            
+            if (data && data.success) {
+                queueData = data.data || [];
+                displayData();
+                console.log('โหลดข้อมูลสำเร็จ:', queueData.length, 'รายการ');
+            } else {
+                console.log('ไม่สามารถโหลดข้อมูลได้:', data);
+                // แสดงข้อมูลเปล่าถ้าโหลดไม่ได้
+                queueData = [];
+                displayData();
+            }
+        }
+
+        // ฟังก์ชันแสดงข้อมูล
+        function displayData() {
+            const mainTable = document.getElementById('dataTable');
+            const adminTable = document.getElementById('adminDataTable');
+            const noData = document.getElementById('noData');
+            const loadingData = document.getElementById('loadingData');
+
+            // ซ่อน loading indicator
+            if (loadingData) {
+                loadingData.classList.add('hidden');
+            }
+
+            if (queueData.length === 0) {
+                mainTable.innerHTML = '';
+                if (adminTable) adminTable.innerHTML = '';
+                noData.classList.remove('hidden');
+                return;
+            }
+
+            noData.classList.add('hidden');
+
+            // แสดงในหน้าแรก
+            mainTable.innerHTML = queueData.map((item, index) => `
+                <tr class="hover:bg-gray-50">
+                    <td class="border border-gray-200 px-4 py-3">${item.name}</td>
+                    <td class="border border-gray-200 px-4 py-3">
+                        <span class="px-3 py-1 rounded-full text-white font-medium ${item.status === 'รับคิวแล้ว' ? 'bg-gray-800' : 'bg-green-600'}">
+                            ${item.status}
+                        </span>
+                    </td>
+                </tr>
+            `).join('');
+
+            // แสดงในหน้าแอดมิน
+            if (adminTable) {
+                adminTable.innerHTML = queueData.map((item, index) => `
+                    <tr class="hover:bg-gray-50">
+                        <td class="border border-gray-200 px-4 py-3">${item.name}</td>
+                        <td class="border border-gray-200 px-4 py-3">
+                            <span class="px-3 py-1 rounded-full text-white font-medium ${item.status === 'รับคิวแล้ว' ? 'bg-gray-800' : 'bg-green-600'}">
+                                ${item.status}
+                            </span>
+                        </td>
+                        <td class="border border-gray-200 px-4 py-3">
+                            <div class="flex gap-2">
+                                <button onclick="editStatus(${index})" class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded text-sm transition-colors">
+                                    แก้ไข
+                                </button>
+                                <button onclick="deleteData(${index})" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm transition-colors">
+                                    ลบ
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+        }
+
+        // ฟังก์ชันแสดงหน้าล็อกอิน
+        function showLogin() {
+            document.getElementById('loginPage').classList.remove('hidden');
+            document.getElementById('passwordInput').focus();
+        }
+
+        // ฟังก์ชันซ่อนหน้าล็อกอิน
+        function hideLogin() {
+            document.getElementById('loginPage').classList.add('hidden');
+            document.getElementById('passwordInput').value = '';
+        }
+
+        // ฟังก์ชันล็อกอิน
+        function login() {
+            const password = document.getElementById('passwordInput').value;
+            if (password === '000') {
+                isLoggedIn = true;
+                localStorage.setItem('adminLoggedIn', 'true');
+                hideLogin();
+                document.getElementById('mainPage').classList.add('hidden');
+                document.getElementById('adminPage').classList.remove('hidden');
+                displayData();
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'รหัสผ่านไม่ถูกต้อง',
+                    text: 'กรุณาลองใหม่อีกครั้ง'
+                });
+            }
+        }
+
+        // ฟังก์ชันย้อนกลับ
+        function goBack() {
+            window.history.back();
+        }
+
+        // ฟังก์ชันดูข้อมูลหน้าแรก
+        function viewMainPage() {
+            document.getElementById('adminPage').classList.add('hidden');
+            document.getElementById('mainPage').classList.remove('hidden');
+            // แสดงปุ่มย้อนกลับและซ่อนปุ่มล็อกอิน
+            document.getElementById('backButtonMain').classList.remove('hidden');
+            document.getElementById('loginButton').classList.add('hidden');
+        }
+
+        // ฟังก์ชันย้อนกลับไปหน้าแอดมิน
+        function goBackToAdmin() {
+            document.getElementById('mainPage').classList.add('hidden');
+            document.getElementById('adminPage').classList.remove('hidden');
+        }
+
+        // ฟังก์ชันออกจากระบบ
+        function logout() {
+            isLoggedIn = false;
+            localStorage.removeItem('adminLoggedIn');
+            document.getElementById('adminPage').classList.add('hidden');
+            document.getElementById('mainPage').classList.remove('hidden');
+            document.getElementById('facebookName').value = '';
+            document.getElementById('statusSelect').value = 'รับคิวแล้ว';
+            editingIndex = -1;
+            // ซ่อนปุ่มย้อนกลับและแสดงปุ่มล็อกอิน
+            document.getElementById('backButtonMain').classList.add('hidden');
+            document.getElementById('loginButton').classList.remove('hidden');
+        }
+
+        // ฟังก์ชันเพิ่มข้อมูล
+        function addData() {
+            const name = document.getElementById('facebookName').value.trim();
+            const status = document.getElementById('statusSelect').value;
+
+            if (!name) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'กรุณาใส่ชื่อเฟสบุ๊ค',
+                    text: 'ชื่อเฟสบุ๊คไม่สามารถเว้นว่างได้'
+                });
+                return;
+            }
+
+            const newData = { name, status };
+
+            if (editingIndex >= 0) {
+                queueData[editingIndex] = newData;
+                editingIndex = -1;
+            } else {
+                queueData.push(newData);
+            }
+
+            saveToGoogleSheets('เพิ่มข้อมูลสำเร็จ!');
+            document.getElementById('facebookName').value = '';
+            document.getElementById('statusSelect').value = 'รับคิวแล้ว';
+        }
+
+        // ฟังก์ชันแก้ไขสถานะ
+        function editStatus(index) {
+            const item = queueData[index];
+            document.getElementById('facebookName').value = item.name;
+            document.getElementById('statusSelect').value = item.status;
+            editingIndex = index;
+            
+            Swal.fire({
+                icon: 'info',
+                title: 'โหมดแก้ไข',
+                text: 'กรุณาแก้ไขข้อมูลแล้วกดบันทึก'
+            });
+        }
+
+        // ฟังก์ชันลบข้อมูล
+        function deleteData(index) {
+            Swal.fire({
+                title: 'ยืนยันการลบ',
+                text: `ต้องการลบข้อมูล "${queueData[index].name}" หรือไม่?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'ลบ',
+                cancelButtonText: 'ยกเลิก'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    queueData.splice(index, 1);
+                    saveToGoogleSheets('ลบข้อมูลสำเร็จ!');
+                }
+            });
+        }
+
+        // ฟังก์ชันล้างข้อมูลทั้งหมด
+        function clearAllData() {
+            Swal.fire({
+                title: 'ยืนยันการล้างข้อมูล',
+                text: 'ต้องการล้างข้อมูลทั้งหมดหรือไม่? การกระทำนี้ไม่สามารถย้อนกลับได้',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'ล้างทั้งหมด',
+                cancelButtonText: 'ยกเลิก'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    queueData = [];
+                    saveToGoogleSheets('ล้างข้อมูลทั้งหมดสำเร็จ!');
+                }
+            });
+        }
+
+        // ฟังก์ชันบันทึกข้อมูลไปยัง Google Sheets
+        function saveToGoogleSheets(successMessage) {
+            Swal.fire({
+                title: 'กำลังบันทึกข้อมูล...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            const script = document.createElement('script');
+            const callbackName = 'handleSaveResponse' + Date.now();
+            
+            window[callbackName] = function(response) {
+                Swal.close();
+                if (response && response.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: successMessage,
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                    displayData();
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'เกิดข้อผิดพลาด',
+                        text: 'ไม่สามารถบันทึกข้อมูลได้'
+                    });
+                }
+                delete window[callbackName];
+                document.head.removeChild(script);
+            };
+
+            script.src = SCRIPT_URL + '?callback=' + callbackName + '&action=save&data=' + encodeURIComponent(JSON.stringify(queueData)) + '&' + new Date().getTime();
+            document.head.appendChild(script);
+        }
+
+        // เพิ่ม Event Listener สำหรับ Enter key
+        document.getElementById('passwordInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                login();
+            }
+        });
+
+        document.getElementById('facebookName').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                addData();
+            }
+        });
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9618f63ce4cdf8e6',t:'MTc1MjkxNDkyOC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
