@@ -17,7 +17,8 @@
         <div class="bg-white rounded-2xl shadow-xl p-8 max-w-4xl mx-auto">
             <div class="text-center mb-6">
                 <div class="text-lg text-gray-600" id="currentDate"></div>
-                <div class="text-green-600 font-medium mt-2">หมดเวลาคิวเวลา 24.00 น. กรุณาแจ้งงานก่อนเวลาที่ระบุ</div>
+                <div class="text-green-600 font-medium mt-2">หมดเวลาคิวเวลา 24.00 น.</div>
+                <div class="text-green-600 font-medium">กรุณาแจ้งงานก่อนเวลาที่ระบุ</div>
             </div>
             
             <div class="flex justify-between items-center mb-8">
@@ -25,9 +26,9 @@
                     <button id="backButtonMain" onclick="goBackToAdmin()" class="hidden bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg font-medium transition-colors">
                         ← ย้อนกลับ
                     </button>
-                    <h1 class="text-3xl font-bold text-gray-800">รายชื่อคิว</h1>
+                    <h1 class="text-3xl font-bold text-gray-800">รายชื่อคิววันนี้</h1>
                 </div>
-                <button id="loginButton" onclick="showLogin()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors">
+                <button id="loginButton" onclick="showLogin()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors text-sm">
                     ล็อกอิน
                 </button>
             </div>
@@ -105,6 +106,7 @@
                         <select id="statusSelect" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                             <option value="รับคิวแล้ว">รับคิวแล้ว</option>
                             <option value="กำลังตัดต่อ">กำลังตัดต่อ</option>
+                            <option value="คิวด่วน">คิวด่วน</option>
                         </select>
                     </div>
                 </div>
@@ -267,7 +269,7 @@
                 <tr class="hover:bg-gray-50">
                     <td class="border border-gray-200 px-4 py-3">${item.name}</td>
                     <td class="border border-gray-200 px-4 py-3">
-                        <span class="px-3 py-1 rounded-full text-white font-medium ${item.status === 'รับคิวแล้ว' ? 'bg-gray-800' : 'bg-green-600'}">
+                        <span class="px-3 py-1 rounded-full text-white font-medium ${item.status === 'รับคิวแล้ว' ? 'bg-gray-800' : item.status === 'คิวด่วน' ? 'bg-red-600' : 'bg-green-600'}">
                             ${item.status}
                         </span>
                     </td>
@@ -280,7 +282,7 @@
                     <tr class="hover:bg-gray-50">
                         <td class="border border-gray-200 px-4 py-3">${item.name}</td>
                         <td class="border border-gray-200 px-4 py-3">
-                            <span class="px-3 py-1 rounded-full text-white font-medium ${item.status === 'รับคิวแล้ว' ? 'bg-gray-800' : 'bg-green-600'}">
+                            <span class="px-3 py-1 rounded-full text-white font-medium ${item.status === 'รับคิวแล้ว' ? 'bg-gray-800' : item.status === 'คิวด่วน' ? 'bg-red-600' : 'bg-green-600'}">
                                 ${item.status}
                             </span>
                         </td>
@@ -495,5 +497,5 @@
             }
         });
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9618f63ce4cdf8e6',t:'MTc1MjkxNDkyOC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'962f90ddf6b9fd21',t:'MTc1MzE1MTk0OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
