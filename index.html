@@ -162,7 +162,7 @@
                 isLoggedIn = true;
                 document.getElementById('mainPage').classList.add('hidden');
                 document.getElementById('adminPage').classList.remove('hidden');
-                loadDataFast(); // ใช้ฟังก์ชันโหลดเร็วสำหรับหน้าแอดมิน
+                displayData();
             }
         }
 
@@ -218,13 +218,12 @@
             }, 10000);
         }
 
-        // รีเฟรชข้อมูลทุก 10 วินาที (ทั้งหน้าแรกและหน้าแอดมิน) - เร็วขึ้น
+        // รีเฟรชข้อมูลทุก 15 วินาที (เฉพาะหน้าแรก) - เร็วขึ้น
         setInterval(() => {
-            if (!document.getElementById('mainPage').classList.contains('hidden') || 
-                !document.getElementById('adminPage').classList.contains('hidden')) {
+            if (!document.getElementById('mainPage').classList.contains('hidden')) {
                 loadDataFast(); // ใช้ฟังก์ชันโหลดเร็ว
             }
-        }, 10000);
+        }, 15000);
 
         // ฟังก์ชันจัดการข้อมูลที่โหลดมา
         function handleLoadData(data) {
@@ -323,7 +322,7 @@
                 hideLogin();
                 document.getElementById('mainPage').classList.add('hidden');
                 document.getElementById('adminPage').classList.remove('hidden');
-                loadDataFast(); // ใช้ฟังก์ชันโหลดเร็วเมื่อล็อกอิน
+                displayData();
             } else {
                 Swal.fire({
                     icon: 'error',
@@ -345,14 +344,12 @@
             // แสดงปุ่มย้อนกลับและซ่อนปุ่มล็อกอิน
             document.getElementById('backButtonMain').classList.remove('hidden');
             document.getElementById('loginButton').classList.add('hidden');
-            loadDataFast(); // โหลดข้อมูลเร็วเมื่อเปลี่ยนหน้า
         }
 
         // ฟังก์ชันย้อนกลับไปหน้าแอดมิน
         function goBackToAdmin() {
             document.getElementById('mainPage').classList.add('hidden');
             document.getElementById('adminPage').classList.remove('hidden');
-            loadDataFast(); // โหลดข้อมูลเร็วเมื่อกลับหน้าแอดมิน
         }
 
         // ฟังก์ชันออกจากระบบ
@@ -500,5 +497,5 @@
             }
         });
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'967b5123a04d6bf3',t:'MTc1Mzk0NjI1Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'962f8591009df886',t:'MTc1MzE1MTQ4NS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
