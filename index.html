@@ -29,7 +29,7 @@
                     <h1 class="text-3xl font-bold text-gray-800">รายชื่อคิววันนี้</h1>
                 </div>
                 <button id="loginButton" onclick="showLogin()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors text-sm">
-                    ล็อกอิน
+                    แอดมิน
                 </button>
             </div>
             
@@ -162,7 +162,7 @@
                 isLoggedIn = true;
                 document.getElementById('mainPage').classList.add('hidden');
                 document.getElementById('adminPage').classList.remove('hidden');
-                displayData();
+                loadDataFast(); // ใช้ฟังก์ชันโหลดเร็วสำหรับหน้าแอดมิน
             }
         }
 
@@ -191,7 +191,7 @@
                 if (script.parentNode) {
                     script.parentNode.removeChild(script);
                 }
-            }, 5000);
+            }, 3000);
         }
 
         // ฟังก์ชันโหลดข้อมูลจาก Google Sheets
@@ -218,12 +218,13 @@
             }, 10000);
         }
 
-        // รีเฟรชข้อมูลทุก 15 วินาที (เฉพาะหน้าแรก) - เร็วขึ้น
+        // รีเฟรชข้อมูลทุก 6 วินาที (ทั้งหน้าแรกและหน้าแอดมิน)
         setInterval(() => {
-            if (!document.getElementById('mainPage').classList.contains('hidden')) {
+            if (!document.getElementById('mainPage').classList.contains('hidden') || 
+                !document.getElementById('adminPage').classList.contains('hidden')) {
                 loadDataFast(); // ใช้ฟังก์ชันโหลดเร็ว
             }
-        }, 15000);
+        }, 6000);
 
         // ฟังก์ชันจัดการข้อมูลที่โหลดมา
         function handleLoadData(data) {
@@ -282,9 +283,11 @@
                     <tr class="hover:bg-gray-50">
                         <td class="border border-gray-200 px-4 py-3">${item.name}</td>
                         <td class="border border-gray-200 px-4 py-3">
-                            <span class="px-3 py-1 rounded-full text-white font-medium ${item.status === 'รับคิวแล้ว' ? 'bg-gray-800' : item.status === 'คิวด่วน' ? 'bg-red-600' : 'bg-green-600'}">
-                                ${item.status}
-                            </span>
+                            <select onchange="updateStatus(${index}, this.value)" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm font-medium ${item.status === 'รับคิวแล้ว' ? 'bg-gray-800 text-white' : item.status === 'คิวด่วน' ? 'bg-red-600 text-white' : 'bg-green-600 text-white'}">
+                                <option value="รับคิวแล้ว" ${item.status === 'รับคิวแล้ว' ? 'selected' : ''}>รับคิวแล้ว</option>
+                                <option value="กำลังตัดต่อ" ${item.status === 'กำลังตัดต่อ' ? 'selected' : ''}>กำลังตัดต่อ</option>
+                                <option value="คิวด่วน" ${item.status === 'คิวด่วน' ? 'selected' : ''}>คิวด่วน</option>
+                            </select>
                         </td>
                         <td class="border border-gray-200 px-4 py-3">
                             <div class="flex gap-2">
@@ -322,7 +325,10 @@
                 hideLogin();
                 document.getElementById('mainPage').classList.add('hidden');
                 document.getElementById('adminPage').classList.remove('hidden');
-                displayData();
+                // โหลดข้อมูลทันทีและต่อเนื่องเมื่อล็อกอิน
+                loadDataFast();
+                setTimeout(() => loadDataFast(), 500);
+                setTimeout(() => loadDataFast(), 1500);
             } else {
                 Swal.fire({
                     icon: 'error',
@@ -344,12 +350,18 @@
             // แสดงปุ่มย้อนกลับและซ่อนปุ่มล็อกอิน
             document.getElementById('backButtonMain').classList.remove('hidden');
             document.getElementById('loginButton').classList.add('hidden');
+            // โหลดข้อมูลทันทีและต่อเนื่อง
+            loadDataFast();
+            setTimeout(() => loadDataFast(), 1000);
         }
 
         // ฟังก์ชันย้อนกลับไปหน้าแอดมิน
         function goBackToAdmin() {
             document.getElementById('mainPage').classList.add('hidden');
             document.getElementById('adminPage').classList.remove('hidden');
+            // โหลดข้อมูลทันทีและต่อเนื่อง
+            loadDataFast();
+            setTimeout(() => loadDataFast(), 1000);
         }
 
         // ฟังก์ชันออกจากระบบ
@@ -394,18 +406,18 @@
             document.getElementById('statusSelect').value = 'รับคิวแล้ว';
         }
 
+        // ฟังก์ชันอัปเดตสถานะทันที
+        function updateStatus(index, newStatus) {
+            queueData[index].status = newStatus;
+            saveToGoogleSheets('อัปเดตสถานะสำเร็จ!');
+        }
+
         // ฟังก์ชันแก้ไขสถานะ
         function editStatus(index) {
             const item = queueData[index];
             document.getElementById('facebookName').value = item.name;
             document.getElementById('statusSelect').value = item.status;
             editingIndex = index;
-            
-            Swal.fire({
-                icon: 'info',
-                title: 'โหมดแก้ไข',
-                text: 'กรุณาแก้ไขข้อมูลแล้วกดบันทึก'
-            });
         }
 
         // ฟังก์ชันลบข้อมูล
@@ -497,5 +509,5 @@
             }
         });
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'962f8591009df886',t:'MTc1MzE1MTQ4NS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96c5b8db647d3db0',t:'MTc1NDcyNjQ1MC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
