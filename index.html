@@ -117,9 +117,22 @@
 
             <!-- ตารางข้อมูล -->
             <div class="overflow-x-auto mb-6">
+                <div class="mb-4 flex justify-between items-center">
+                    <div class="flex items-center gap-4">
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" id="selectAll" onchange="toggleSelectAll()" class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500">
+                            <span class="text-gray-700 font-medium">เลือกทั้งหมด</span>
+                        </label>
+                        <span id="selectedCount" class="text-sm text-gray-500">เลือก 0 รายการ</span>
+                    </div>
+                    <button id="deleteSelectedBtn" onclick="deleteSelected()" class="hidden bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+                        ลบรายการที่เลือก
+                    </button>
+                </div>
                 <table class="w-full border-collapse">
                     <thead>
                         <tr class="bg-gray-50">
+                            <th class="border border-gray-200 px-4 py-3 text-center font-semibold text-gray-700 w-12">เลือก</th>
                             <th class="border border-gray-200 px-4 py-3 text-left font-semibold text-gray-700">ชื่อเฟสบุ๊ค</th>
                             <th class="border border-gray-200 px-4 py-3 text-left font-semibold text-gray-700">สถานะ</th>
                             <th class="border border-gray-200 px-4 py-3 text-left font-semibold text-gray-700">จัดการ</th>
@@ -281,6 +294,9 @@
             if (adminTable) {
                 adminTable.innerHTML = queueData.map((item, index) => `
                     <tr class="hover:bg-gray-50">
+                        <td class="border border-gray-200 px-4 py-3 text-center">
+                            <input type="checkbox" class="item-checkbox w-4 h-4 text-blue-600 rounded focus:ring-blue-500" data-index="${index}" onchange="updateSelectedCount()">
+                        </td>
                         <td class="border border-gray-200 px-4 py-3">${item.name}</td>
                         <td class="border border-gray-200 px-4 py-3">
                             <select onchange="updateStatus(${index}, this.value)" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm font-medium ${item.status === 'รับคิวแล้ว' ? 'bg-gray-800 text-white' : item.status === 'คิวด่วน' ? 'bg-red-600 text-white' : 'bg-green-600 text-white'}">
@@ -301,6 +317,7 @@
                         </td>
                     </tr>
                 `).join('');
+                updateSelectedCount();
             }
         }
 
@@ -483,6 +500,65 @@
             document.head.appendChild(script);
         }
 
+        // ฟังก์ชันเลือกทั้งหมด
+        function toggleSelectAll() {
+            const selectAllCheckbox = document.getElementById('selectAll');
+            const itemCheckboxes = document.querySelectorAll('.item-checkbox');
+            
+            itemCheckboxes.forEach(checkbox => {
+                checkbox.checked = selectAllCheckbox.checked;
+            });
+            
+            updateSelectedCount();
+        }
+
+        // ฟังก์ชันอัปเดตจำนวนที่เลือก
+        function updateSelectedCount() {
+            const itemCheckboxes = document.querySelectorAll('.item-checkbox');
+            const checkedBoxes = document.querySelectorAll('.item-checkbox:checked');
+            const selectedCount = document.getElementById('selectedCount');
+            const deleteSelectedBtn = document.getElementById('deleteSelectedBtn');
+            const selectAllCheckbox = document.getElementById('selectAll');
+            
+            const count = checkedBoxes.length;
+            selectedCount.textContent = `เลือก ${count} รายการ`;
+            
+            // แสดง/ซ่อนปุ่มลบ
+            if (count > 0) {
+                deleteSelectedBtn.classList.remove('hidden');
+            } else {
+                deleteSelectedBtn.classList.add('hidden');
+            }
+            
+            // อัปเดตสถานะ checkbox เลือกทั้งหมด
+            if (count === 0) {
+                selectAllCheckbox.indeterminate = false;
+                selectAllCheckbox.checked = false;
+            } else if (count === itemCheckboxes.length) {
+                selectAllCheckbox.indeterminate = false;
+                selectAllCheckbox.checked = true;
+            } else {
+                selectAllCheckbox.indeterminate = true;
+            }
+        }
+
+        // ฟังก์ชันลบรายการที่เลือก
+        function deleteSelected() {
+            const checkedBoxes = document.querySelectorAll('.item-checkbox:checked');
+            const selectedIndices = Array.from(checkedBoxes).map(checkbox => parseInt(checkbox.dataset.index));
+            
+            if (selectedIndices.length === 0) return;
+            
+            // เรียงลำดับจากมากไปน้อยเพื่อลบโดยไม่กระทบ index
+            selectedIndices.sort((a, b) => b - a);
+            
+            selectedIndices.forEach(index => {
+                queueData.splice(index, 1);
+            });
+            
+            saveToGoogleSheets(`ลบ ${selectedIndices.length} รายการสำเร็จ!`);
+        }
+
         // เพิ่ม Event Listener สำหรับ Enter key
         document.getElementById('passwordInput').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
@@ -496,5 +572,5 @@
             }
         });
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96cc6a8ed1073e0c',t:'MTc1NDc5NjY0My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96d53858e3fc87d5',t:'MTc1NDg4ODk1OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
