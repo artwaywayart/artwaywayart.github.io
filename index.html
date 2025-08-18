@@ -119,29 +119,16 @@
                         </select>
                     </div>
                 </div>
-                <button onclick="addData()" class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-medium transition-colors">
-                    บันทึกข้อมูล
+                <button onclick="addData()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors text-sm">
+                    เพิ่มรายชื่อคิว
                 </button>
             </div>
 
             <!-- ตารางข้อมูล -->
             <div class="overflow-x-auto mb-6">
-                <div class="mb-4 flex justify-between items-center">
-                    <div class="flex items-center gap-4">
-                        <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="checkbox" id="selectAll" onchange="toggleSelectAll()" class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500">
-                            <span class="text-gray-700 font-medium">เลือกทั้งหมด</span>
-                        </label>
-                        <span id="selectedCount" class="text-sm text-gray-500">เลือก 0 รายการ</span>
-                    </div>
-                    <button id="deleteSelectedBtn" onclick="deleteSelected()" class="hidden bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
-                        ลบรายการที่เลือก
-                    </button>
-                </div>
                 <table class="w-full border-collapse">
                     <thead>
                         <tr class="bg-gray-50">
-                            <th class="border border-gray-200 px-4 py-3 text-center font-semibold text-gray-700 w-12">เลือก</th>
                             <th class="border border-gray-200 px-4 py-3 text-left font-semibold text-gray-700">ชื่อเฟสบุ๊ค</th>
                             <th class="border border-gray-200 px-4 py-3 text-left font-semibold text-gray-700">สถานะ</th>
                             <th class="border border-gray-200 px-4 py-3 text-left font-semibold text-gray-700">จัดการ</th>
@@ -303,9 +290,6 @@
             if (adminTable) {
                 adminTable.innerHTML = queueData.map((item, index) => `
                     <tr class="hover:bg-gray-50">
-                        <td class="border border-gray-200 px-4 py-3 text-center">
-                            <input type="checkbox" class="item-checkbox w-4 h-4 text-blue-600 rounded focus:ring-blue-500" data-index="${index}" onchange="updateSelectedCount()">
-                        </td>
                         <td class="border border-gray-200 px-4 py-3">${item.name}</td>
                         <td class="border border-gray-200 px-4 py-3">
                             <select onchange="updateStatus(${index}, this.value)" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm font-medium ${item.status === 'รับคิวแล้ว' ? 'bg-gray-800 text-white' : item.status === 'คิวด่วน' ? 'bg-red-600 text-white' : 'bg-green-600 text-white'}">
@@ -326,7 +310,6 @@
                         </td>
                     </tr>
                 `).join('');
-                updateSelectedCount();
             }
         }
 
@@ -435,7 +418,7 @@
         // ฟังก์ชันอัปเดตสถานะทันที
         function updateStatus(index, newStatus) {
             queueData[index].status = newStatus;
-            saveToGoogleSheets('อัปเดตสถานะสำเร็จ!');
+            saveToGoogleSheetsNoRefresh('อัปเดตสถานะสำเร็จ!');
         }
 
         // ฟังก์ชันแก้ไขสถานะ
@@ -449,7 +432,7 @@
         // ฟังก์ชันลบข้อมูล
         function deleteData(index) {
             queueData.splice(index, 1);
-            saveToGoogleSheets('ลบข้อมูลสำเร็จ!');
+            saveToGoogleSheetsNoRefresh('ลบข้อมูลสำเร็จ!');
         }
 
         // ฟังก์ชันล้างข้อมูลทั้งหมด
@@ -471,7 +454,7 @@
             });
         }
 
-        // ฟังก์ชันบันทึกข้อมูลไปยัง Google Sheets
+        // ฟังก์ชันบันทึกข้อมูลไปยัง Google Sheets (สำหรับเพิ่มข้อมูล - มีการรีเฟรช)
         function saveToGoogleSheets(successMessage) {
             Swal.fire({
                 title: 'กำลังบันทึกข้อมูล...',
@@ -487,11 +470,17 @@
             window[callbackName] = function(response) {
                 Swal.close();
                 if (response && response.success) {
-                    Swal.fire({
+                    // แสดงข้อความสำเร็จแบบ toast ที่มุมขวาบน
+                    const toast = Swal.mixin({
+                        toast: true,
+                        position: 'top-end',
+                        showConfirmButton: false,
+                        timer: 2000,
+                        timerProgressBar: true
+                    });
+                    toast.fire({
                         icon: 'success',
-                        title: successMessage,
-                        timer: 1500,
-                        showConfirmButton: false
+                        title: successMessage
                     });
                     displayData();
                 } else {
@@ -509,64 +498,43 @@
             document.head.appendChild(script);
         }
 
-        // ฟังก์ชันเลือกทั้งหมด
-        function toggleSelectAll() {
-            const selectAllCheckbox = document.getElementById('selectAll');
-            const itemCheckboxes = document.querySelectorAll('.item-checkbox');
+        // ฟังก์ชันบันทึกข้อมูลไปยัง Google Sheets (ไม่รีเฟรชข้อมูล - สำหรับการแก้ไข/ลบ)
+        function saveToGoogleSheetsNoRefresh(successMessage) {
+            const script = document.createElement('script');
+            const callbackName = 'handleSaveResponseNoRefresh' + Date.now();
             
-            itemCheckboxes.forEach(checkbox => {
-                checkbox.checked = selectAllCheckbox.checked;
-            });
-            
-            updateSelectedCount();
+            window[callbackName] = function(response) {
+                if (response && response.success) {
+                    // แสดงข้อความสำเร็จแบบเงียบๆ
+                    const toast = Swal.mixin({
+                        toast: true,
+                        position: 'top-end',
+                        showConfirmButton: false,
+                        timer: 2000,
+                        timerProgressBar: true
+                    });
+                    toast.fire({
+                        icon: 'success',
+                        title: successMessage
+                    });
+                    // อัปเดตแสดงผลทันทีโดยไม่โหลดจาก server
+                    displayData();
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'เกิดข้อผิดพลาด',
+                        text: 'ไม่สามารถบันทึกข้อมูลได้'
+                    });
+                }
+                delete window[callbackName];
+                document.head.removeChild(script);
+            };
+
+            script.src = SCRIPT_URL + '?callback=' + callbackName + '&action=save&data=' + encodeURIComponent(JSON.stringify(queueData)) + '&' + new Date().getTime();
+            document.head.appendChild(script);
         }
 
-        // ฟังก์ชันอัปเดตจำนวนที่เลือก
-        function updateSelectedCount() {
-            const itemCheckboxes = document.querySelectorAll('.item-checkbox');
-            const checkedBoxes = document.querySelectorAll('.item-checkbox:checked');
-            const selectedCount = document.getElementById('selectedCount');
-            const deleteSelectedBtn = document.getElementById('deleteSelectedBtn');
-            const selectAllCheckbox = document.getElementById('selectAll');
-            
-            const count = checkedBoxes.length;
-            selectedCount.textContent = `เลือก ${count} รายการ`;
-            
-            // แสดง/ซ่อนปุ่มลบ
-            if (count > 0) {
-                deleteSelectedBtn.classList.remove('hidden');
-            } else {
-                deleteSelectedBtn.classList.add('hidden');
-            }
-            
-            // อัปเดตสถานะ checkbox เลือกทั้งหมด
-            if (count === 0) {
-                selectAllCheckbox.indeterminate = false;
-                selectAllCheckbox.checked = false;
-            } else if (count === itemCheckboxes.length) {
-                selectAllCheckbox.indeterminate = false;
-                selectAllCheckbox.checked = true;
-            } else {
-                selectAllCheckbox.indeterminate = true;
-            }
-        }
 
-        // ฟังก์ชันลบรายการที่เลือก
-        function deleteSelected() {
-            const checkedBoxes = document.querySelectorAll('.item-checkbox:checked');
-            const selectedIndices = Array.from(checkedBoxes).map(checkbox => parseInt(checkbox.dataset.index));
-            
-            if (selectedIndices.length === 0) return;
-            
-            // เรียงลำดับจากมากไปน้อยเพื่อลบโดยไม่กระทบ index
-            selectedIndices.sort((a, b) => b - a);
-            
-            selectedIndices.forEach(index => {
-                queueData.splice(index, 1);
-            });
-            
-            saveToGoogleSheets(`ลบ ${selectedIndices.length} รายการสำเร็จ!`);
-        }
 
         // เพิ่ม Event Listener สำหรับ Enter key
         document.getElementById('passwordInput').addEventListener('keypress', function(e) {
@@ -581,5 +549,5 @@
             }
         });
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'970075d222f95c2f',t:'MTc1NTM0MjM2NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'970ed1c175f140fc',t:'MTc1NTQ5MjkzMS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
