@@ -17,8 +17,8 @@
         <div class="bg-white rounded-2xl shadow-xl p-8 max-w-4xl mx-auto">
             <div class="text-center mb-6">
                 <div class="text-lg text-gray-600" id="currentDate"></div>
-                <div class="text-green-600 font-medium mt-2">หมดเวลาคิวเวลา 24.00 น.</div>
-                <div class="text-green-600 font-medium">กรุณาแจ้งงานก่อนเวลาที่ระบุ</div>
+                <div class="text-red-600 font-medium mt-2">หมดเวลาคิวเวลา 24.00 น.</div>
+                <div class="text-3xl font-bold text-gray-800 mt-4" id="currentTime"></div>
             </div>
             
             <div class="flex justify-between items-center mb-8">
@@ -160,6 +160,7 @@
         // โหลดข้อมูลเมื่อเริ่มต้น
         window.onload = function() {
             displayCurrentDate();
+            updateClock();
             loadDataFast(); // ใช้ฟังก์ชันโหลดเร็ว
             checkLoginStatus();
         };
@@ -188,6 +189,25 @@
             const dateString = now.toLocaleDateString('th-TH', options);
             document.getElementById('currentDate').textContent = dateString;
         }
+
+        // ฟังก์ชันอัปเดตนาฬิกา
+        function updateClock() {
+            const now = new Date();
+            
+            // แสดงเวลาปัจจุบัน
+            const timeString = now.toLocaleTimeString('th-TH', {
+                timeZone: 'Asia/Bangkok',
+                hour12: false
+            });
+            
+            const currentTimeElement = document.getElementById('currentTime');
+            if (currentTimeElement) {
+                currentTimeElement.textContent = timeString;
+            }
+        }
+
+        // อัปเดตนาฬิกาทุกวินาที
+        setInterval(updateClock, 1000);
 
         // ฟังก์ชันโหลดข้อมูลแบบเร็ว (ไม่แสดง loading)
         function loadDataFast() {
@@ -227,10 +247,9 @@
             }, 10000);
         }
 
-        // รีเฟรชข้อมูลทุก 6 วินาที (ทั้งหน้าแรกและหน้าแอดมิน)
+        // รีเฟรชข้อมูลทุก 6 วินาที (เฉพาะหน้าแรก)
         setInterval(() => {
-            if (!document.getElementById('mainPage').classList.contains('hidden') || 
-                !document.getElementById('adminPage').classList.contains('hidden')) {
+            if (!document.getElementById('mainPage').classList.contains('hidden')) {
                 loadDataFast(); // ใช้ฟังก์ชันโหลดเร็ว
             }
         }, 6000);
@@ -431,8 +450,23 @@
 
         // ฟังก์ชันลบข้อมูล
         function deleteData(index) {
-            queueData.splice(index, 1);
-            saveToGoogleSheetsNoRefresh('ลบข้อมูลสำเร็จ!');
+            const item = queueData[index];
+            
+            Swal.fire({
+                title: 'ยืนยันการลบ',
+                text: `ต้องการลบ "${item.name}" หรือไม่?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'ลบ',
+                cancelButtonText: 'ยกเลิก'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    queueData.splice(index, 1);
+                    saveToGoogleSheetsNoRefresh('ลบข้อมูลสำเร็จ!');
+                }
+            });
         }
 
         // ฟังก์ชันล้างข้อมูลทั้งหมด
@@ -549,5 +583,5 @@
             }
         });
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'970ed1c175f140fc',t:'MTc1NTQ5MjkzMS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9715dc5505e98982',t:'MTc1NTU2Njc2NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
