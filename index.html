@@ -412,10 +412,17 @@
             const status = document.getElementById('statusSelect').value;
 
             if (!name) {
-                Swal.fire({
+                // แสดงข้อความเตือนแบบเร็ว
+                const toast = Swal.mixin({
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 1500,
+                    timerProgressBar: true
+                });
+                toast.fire({
                     icon: 'warning',
-                    title: 'กรุณาใส่ชื่อเฟสบุ๊ค',
-                    text: 'ชื่อเฟสบุ๊คไม่สามารถเว้นว่างได้'
+                    title: 'กรุณาใส่ชื่อเฟสบุ๊ค'
                 });
                 return;
             }
@@ -429,7 +436,25 @@
                 queueData.push(newData);
             }
 
-            saveToGoogleSheets('เพิ่มข้อมูลสำเร็จ!');
+            // อัปเดตแสดงผลทันที
+            displayData();
+            
+            // แสดงข้อความสำเร็จทันที
+            const toast = Swal.mixin({
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 1500,
+                timerProgressBar: true
+            });
+            toast.fire({
+                icon: 'success',
+                title: 'เพิ่มข้อมูลสำเร็จ!'
+            });
+
+            // บันทึกไปยัง Google Sheets ในพื้นหลัง
+            saveToGoogleSheetsBackground();
+            
             document.getElementById('facebookName').value = '';
             document.getElementById('statusSelect').value = 'รับคิวแล้ว';
         }
@@ -437,7 +462,25 @@
         // ฟังก์ชันอัปเดตสถานะทันที
         function updateStatus(index, newStatus) {
             queueData[index].status = newStatus;
-            saveToGoogleSheetsNoRefresh('อัปเดตสถานะสำเร็จ!');
+            
+            // อัปเดตแสดงผลทันที
+            displayData();
+            
+            // แสดงข้อความสำเร็จแบบเร็ว
+            const toast = Swal.mixin({
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 1000,
+                timerProgressBar: true
+            });
+            toast.fire({
+                icon: 'success',
+                title: 'อัปเดตสถานะสำเร็จ!'
+            });
+            
+            // บันทึกไปยัง Google Sheets ในพื้นหลัง
+            saveToGoogleSheetsBackground();
         }
 
         // ฟังก์ชันแก้ไขสถานะ
@@ -460,11 +503,30 @@
                 confirmButtonColor: '#d33',
                 cancelButtonColor: '#3085d6',
                 confirmButtonText: 'ลบ',
-                cancelButtonText: 'ยกเลิก'
+                cancelButtonText: 'ยกเลิก',
+                timer: 5000,
+                timerProgressBar: true
             }).then((result) => {
                 if (result.isConfirmed) {
+                    // ลบข้อมูลและอัปเดตแสดงผลทันที
                     queueData.splice(index, 1);
-                    saveToGoogleSheetsNoRefresh('ลบข้อมูลสำเร็จ!');
+                    displayData();
+                    
+                    // แสดงข้อความสำเร็จแบบเร็ว
+                    const toast = Swal.mixin({
+                        toast: true,
+                        position: 'top-end',
+                        showConfirmButton: false,
+                        timer: 1500,
+                        timerProgressBar: true
+                    });
+                    toast.fire({
+                        icon: 'success',
+                        title: 'ลบข้อมูลสำเร็จ!'
+                    });
+                    
+                    // บันทึกไปยัง Google Sheets ในพื้นหลัง
+                    saveToGoogleSheetsBackground();
                 }
             });
         }
@@ -568,6 +630,36 @@
             document.head.appendChild(script);
         }
 
+        // ฟังก์ชันบันทึกข้อมูลในพื้นหลัง (ไม่แสดงข้อความใดๆ)
+        function saveToGoogleSheetsBackground() {
+            const script = document.createElement('script');
+            const callbackName = 'handleSaveResponseBackground' + Date.now();
+            
+            window[callbackName] = function(response) {
+                // บันทึกเงียบๆ ไม่แสดงข้อความ
+                if (!response || !response.success) {
+                    console.log('บันทึกข้อมูลไม่สำเร็จ:', response);
+                }
+                delete window[callbackName];
+                if (script.parentNode) {
+                    document.head.removeChild(script);
+                }
+            };
+
+            script.src = SCRIPT_URL + '?callback=' + callbackName + '&action=save&data=' + encodeURIComponent(JSON.stringify(queueData)) + '&' + new Date().getTime();
+            document.head.appendChild(script);
+            
+            // ลบ script หลังจาก 5 วินาที
+            setTimeout(() => {
+                if (script.parentNode) {
+                    document.head.removeChild(script);
+                }
+                if (window[callbackName]) {
+                    delete window[callbackName];
+                }
+            }, 5000);
+        }
+
 
 
         // เพิ่ม Event Listener สำหรับ Enter key
@@ -583,5 +675,5 @@
             }
         });
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9715dc5505e98982',t:'MTc1NTU2Njc2NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'98f51a19556dfe08',t:'MTc2MDU5MTk3My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
