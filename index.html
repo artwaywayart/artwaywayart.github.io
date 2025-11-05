@@ -3,7 +3,16 @@
  <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>ระบบบันทึกข้อมูลรายชื่อคิว</title>
+  <title>ระบบบันทึกข้อมูลรายชื่อคิว</title><!-- PWA Meta Tags -->
+  <meta name="theme-color" content="#2563eb">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="ระบบคิว">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="application-name" content="ระบบคิว"><!-- PWA Icons -->
+  <link rel="icon" type="image/png" sizes="192x192" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgdmlld0JveD0iMCAwIDE5MiAxOTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxOTIiIGhlaWdodD0iMTkyIiByeD0iMjQiIGZpbGw9IiMyNTYzZWIiLz4KPHN2ZyB4PSI0OCIgeT0iNDgiIHdpZHRoPSI5NiIgaGVpZ2h0PSI5NiIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjIiPgo8cGF0aCBkPSJNOSAxMWgzdjEyaDN2LTEyaDNsLTQtOC00IDh6Ii8+CjxwYXRoIGQ9Ik0yMSAzSDNhMiAyIDAgMCAwLTIgMnYxNGEyIDIgMCAwIDAgMiAyaDE4YTIgMiAwIDAgMCAyLTJWNWEyIDIgMCAwIDAtMi0yeiIvPgo8L3N2Zz4KPC9zdmc+">
+  <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgdmlld0JveD0iMCAwIDE5MiAxOTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxOTIiIGhlaWdodD0iMTkyIiByeD0iMjQiIGZpbGw9IiMyNTYzZWIiLz4KPHN2ZyB4PSI0OCIgeT0iNDgiIHdpZHRoPSI5NiIgaGVpZ2h0PSI5NiIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjIiPgo8cGF0aCBkPSJNOSAxMWgzdjEyaDN2LTEyaDNsLTQtOC00IDh6Ii8+CjxwYXRoIGQ9Ik0yMSAzSDNhMiAyIDAgMCAwLTIgMnYxNGEyIDIgMCAwIDAgMiAyaDE4YTIgMiAwIDAgMCAyLTJWNWEyIDIgMCAwIDAtMi0yeiIvPgo8L3N2Zz4KPC9zdmc+"><!-- PWA Manifest -->
+  <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIuC4o+C4sOC4muC4muC4muC4seC4meC4l+C4tuC4geC4guC5ieC4reC4oeC4ueC4peC4o+C4suC4ouC4iuC4t+C5iOC4reC4hOC4tOC4oCIsCiAgInNob3J0X25hbWUiOiAi4Lij4Lia4Lia4LiE4Li04LiuIiwKICAic3RhcnRfdXJsIjogIi8iLAogICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLAogICJiYWNrZ3JvdW5kX2NvbG9yIjogIiNmZmZmZmYiLAogICJ0aGVtZV9jb2xvciI6ICIjMjU2M2ViIiwKICAiaWNvbnMiOiBbCiAgICB7CiAgICAgICJzcmMiOiAiZGF0YTppbWFnZS9zdmcreG1sO2Jhc2U2NCxQSE4yWnlCM2FXUjBhRDBpTVRreUlpQm9aV2xuYUhROUlqRTVNaUlpSUhacFpYZENiM2c5SWpBZ01DQXhPVElnTVRreUlpQm1hV3hzUFNKdWIyNWxJaUI0Yld4dWN6MGlhSFIwY0RvdkwzZDNkeTUzTXk1dmNtY3ZNakF3TUM5emRtY2lQZ28xjcmVqZENCaWRHZ2dQU0pxTVRreUlpQm9aV2xuYUhROUlqRTVNaUlpSUhKNFBTSXlOQ0lnWm1sc2JEMGlJakkxTmpObFlpSXZQZ29nUEhOMlp5QjRQU0kwT0NJZ2VUMGlORGdpSUhkcFpIUm9QU0k1TmlJZ2FHVnBaMmgwUFNJNU5pSWlJSFpwWlhkQ2IzZzlJakFnTUNBeU5DQXlOQ0lnWm1sc2JEMGlibTl1WlNJZ2MzUnliMnRsUFNKM2FHbDBaU0lnYzNSeWIydGxMWGRwWkhSb1BTSXlJajRLUEhCaGRHZ2daRDBpVFRrZ01URm9NM1l4TW1nelkzWXRNVEpvTTJ3dE5DMDRMVFFnT0hvaUx6NEtQSEJoZEdnZ1pEMGlUVEl4SURNZ1NETmhNaUF5SURBZ01DQXdMVElnTW5ZeE5HRXlJRElnTUNBd0lESWdNakJvTVRoaE1pQXlJREFnTUNBd0lESXRNbFkxWVRJZ01pQXdJREF0TWkweWVpSXZQZ284TDNOMlp6NEtQQzl6ZG1jKyIsCiAgICAgICJzaXplcyI6ICIxOTJ4MTkyIiwKICAgICAgInR5cGUiOiAiaW1hZ2Uvc3ZnK3htbCIKICAgIH0sCiAgICB7CiAgICAgICJzcmMiOiAiZGF0YTppbWFnZS9zdmcreG1sO2Jhc2U2NCxQSE4yWnlCM2FXUjBhRDBpTlRFeUlpQm9aV2xuYUhROUlqVXhNaUlpSUhacFpYZENiM2c5SWpBZ01DQTFNVElnTlRFeUlpQm1hV3hzUFNKdWIyNWxJaUI0Yld4dWN6MGlhSFIwY0RvdkwzZDNkeTUzTXk1dmNtY3ZNakF3TUM5emRtY2lQZ28xjcmVqZENCaWRHZ2dQU0kxTVRJaUlHaGxhV2RvZEQwaU5URXlJaUJ5ZUQwaU1qUWlJR1pwYkd3OUlpSXlOVFl6WldJaUx6NEtQSE4yWnlCNFBTSXhNamdpSUhrOUlqRXlPQ0lnZDJsa2RHZzlJakl6TmlJZ2FHVnBaMmgwUFNJeU16WWlJSFpwWlhkQ2IzZzlJakFnTUNBeU5DQXlOQ0lnWm1sc2JEMGlibTl1WlNJZ2MzUnliMnRsUFNKM2FHbDBaU0lnYzNSeWIydGxMWGRwWkhSb1BTSXlJajRLUEhCaGRHZ2daRDBpVFRrZ01URm9NM1l4TW1nelkzWXRNVEpvTTJ3dE5DMDRMVFFnT0hvaUx6NEtQSEJoZEdnZ1pEMGlUVEl4SURNZ1NETmhNaUF5SURBZ01DQXdMVElnTW5ZeE5HRXlJRElnTUNBd0lESWdNakJvTVRoaE1pQXlJREFnTUNBd0lESXRNbFkxWVRJZ01pQXdJREF0TWkweWVpSXZQZ284TDNOMlp6NEtQQzl6ZG1jKyIsCiAgICAgICJzaXplcyI6ICI1MTJ4NTEyIiwKICAgICAgInR5cGUiOiAiaW1hZ2Uvc3ZnK3htbCIKICAgIH0KICBdCn0=">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <style>
@@ -118,11 +127,17 @@
        <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
        </svg></button>
       <h1 class="text-xl md:text-3xl font-bold text-gray-800 mobile-text-xl">รายชื่อคิววันนี้</h1>
-     </div><button id="loginButton" onclick="showLogin()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 md:p-3 rounded-lg font-medium transition-colors text-sm mobile-btn" title="เข้าสู่ระบบแอดมิน">
-      <div class="flex items-center gap-2">
-       <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-       </svg><span class="hidden md:inline">แอดมิน</span>
-      </div></button>
+     </div>
+     <div class="flex gap-2"><button id="installButton" onclick="installApp()" class="hidden bg-green-600 hover:bg-green-700 text-white px-3 py-2 md:p-3 rounded-lg font-medium transition-colors text-sm mobile-btn" title="ติดตั้งแอปลงมือถือ">
+       <div class="flex items-center gap-2">
+        <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+        </svg><span class="hidden md:inline">ติดตั้งแอป</span>
+       </div></button> <button id="loginButton" onclick="showLogin()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 md:p-3 rounded-lg font-medium transition-colors text-sm mobile-btn" title="เข้าสู่ระบบแอดมิน">
+       <div class="flex items-center gap-2">
+        <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+        </svg><span class="hidden md:inline">แอดมิน</span>
+       </div></button>
+     </div>
     </div>
     <div class="overflow-x-auto -mx-2 md:mx-0">
      <table class="w-full border-collapse mobile-table">
@@ -203,6 +218,7 @@
         let queueData = [];
         let editingIndex = -1;
         let isLoggedIn = false;
+        let deferredPrompt;
 
         // URL ของ Google Apps Script
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyXTCJFHYvK7e00V8HEaO8EA3b_mIqXm3eAMSextQTiBU3dsEUHippz3O6Xle9z-WJoSA/exec';
@@ -220,7 +236,171 @@
             }
             
             checkLoginStatus();
+            setupPWA(); // ตั้งค่า PWA
         };
+
+        // ตั้งค่า PWA และปุ่มติดตั้ง
+        function setupPWA() {
+            // ตรวจสอบว่าเบราว์เซอร์รองรับ PWA หรือไม่
+            if ('serviceWorker' in navigator) {
+                // ลงทะเบียน Service Worker (ไม่จำเป็นสำหรับการติดตั้งพื้นฐาน)
+                console.log('PWA supported');
+            }
+
+            // ฟังเหตุการณ์ beforeinstallprompt
+            window.addEventListener('beforeinstallprompt', (e) => {
+                console.log('PWA install prompt available');
+                // ป้องกันการแสดง prompt อัตโนมัติ
+                e.preventDefault();
+                // เก็บ event ไว้ใช้ภายหลัง
+                deferredPrompt = e;
+                // แสดงปุ่มติดตั้ง
+                showInstallButton();
+            });
+
+            // ฟังเหตุการณ์เมื่อติดตั้งสำเร็จ
+            window.addEventListener('appinstalled', (e) => {
+                console.log('PWA installed successfully');
+                hideInstallButton();
+                
+                // แสดงข้อความแจ้งเตือนว่าติดตั้งสำเร็จ
+                const toast = Swal.mixin({
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true
+                });
+                toast.fire({
+                    icon: 'success',
+                    title: 'ติดตั้งแอปสำเร็จ!',
+                    text: 'ตอนนี้คุณสามารถเปิดแอปจากหน้าจอหลักได้แล้ว'
+                });
+            });
+
+            // ตรวจสอบว่าแอปถูกติดตั้งแล้วหรือไม่
+            if (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) {
+                console.log('App is running in standalone mode');
+                hideInstallButton();
+            }
+
+            // สำหรับ iOS Safari - ตรวจสอบว่าเป็น standalone mode หรือไม่
+            if (window.navigator.standalone === true) {
+                console.log('App is running in iOS standalone mode');
+                hideInstallButton();
+            }
+        }
+
+        // แสดงปุ่มติดตั้ง
+        function showInstallButton() {
+            const installButton = document.getElementById('installButton');
+            if (installButton) {
+                installButton.classList.remove('hidden');
+            }
+        }
+
+        // ซ่อนปุ่มติดตั้ง
+        function hideInstallButton() {
+            const installButton = document.getElementById('installButton');
+            if (installButton) {
+                installButton.classList.add('hidden');
+            }
+        }
+
+        // ฟังก์ชันติดตั้งแอป
+        async function installApp() {
+            if (!deferredPrompt) {
+                // ถ้าไม่มี prompt ให้แสดงคำแนะนำการติดตั้งแบบ manual
+                showManualInstallInstructions();
+                return;
+            }
+
+            try {
+                // แสดง install prompt
+                deferredPrompt.prompt();
+                
+                // รอผลลัพธ์จากผู้ใช้
+                const { outcome } = await deferredPrompt.userChoice;
+                
+                if (outcome === 'accepted') {
+                    console.log('User accepted the install prompt');
+                    
+                    // แสดงข้อความกำลังติดตั้ง
+                    const toast = Swal.mixin({
+                        toast: true,
+                        position: 'top-end',
+                        showConfirmButton: false,
+                        timer: 2000,
+                        timerProgressBar: true
+                    });
+                    toast.fire({
+                        icon: 'info',
+                        title: 'กำลังติดตั้งแอป...'
+                    });
+                } else {
+                    console.log('User dismissed the install prompt');
+                }
+                
+                // ล้าง prompt
+                deferredPrompt = null;
+                hideInstallButton();
+                
+            } catch (error) {
+                console.error('Error during app installation:', error);
+                showManualInstallInstructions();
+            }
+        }
+
+        // แสดงคำแนะนำการติดตั้งแบบ manual
+        function showManualInstallInstructions() {
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+            const isAndroid = /Android/.test(navigator.userAgent);
+            
+            let instructions = '';
+            
+            if (isIOS) {
+                instructions = `
+                    <div class="text-left">
+                        <p class="mb-3"><strong>วิธีติดตั้งบน iOS:</strong></p>
+                        <ol class="list-decimal list-inside space-y-2 text-sm">
+                            <li>กดปุ่ม "แชร์" (ไอคอนสี่เหลี่ยมพร้อมลูกศร) ที่แถบล่าง</li>
+                            <li>เลื่อนลงและเลือก "เพิ่มที่หน้าจอหลัก"</li>
+                            <li>กด "เพิ่ม" เพื่อยืนยัน</li>
+                        </ol>
+                    </div>
+                `;
+            } else if (isAndroid) {
+                instructions = `
+                    <div class="text-left">
+                        <p class="mb-3"><strong>วิธีติดตั้งบน Android:</strong></p>
+                        <ol class="list-decimal list-inside space-y-2 text-sm">
+                            <li>กดปุ่ม "เมนู" (จุด 3 จุด) ที่มุมขวาบน</li>
+                            <li>เลือก "เพิ่มที่หน้าจอหลัก" หรือ "ติดตั้งแอป"</li>
+                            <li>กด "ติดตั้ง" เพื่อยืนยัน</li>
+                        </ol>
+                    </div>
+                `;
+            } else {
+                instructions = `
+                    <div class="text-left">
+                        <p class="mb-3"><strong>วิธีติดตั้งแอป:</strong></p>
+                        <p class="text-sm">กดปุ่มเมนูของเบราว์เซอร์และมองหา "ติดตั้งแอป" หรือ "เพิ่มที่หน้าจอหลัก"</p>
+                    </div>
+                `;
+            }
+            
+            Swal.fire({
+                title: 'ติดตั้งแอปลงมือถือ',
+                html: instructions,
+                icon: 'info',
+                confirmButtonText: 'เข้าใจแล้ว',
+                confirmButtonColor: '#2563eb',
+                width: '90%',
+                customClass: {
+                    popup: 'text-sm'
+                }
+            });
+        }
 
         // ตรวจสอบว่าเป็นอุปกรณ์มือถือหรือไม่
         function isMobileDevice() {
@@ -428,7 +608,7 @@
             mainTable.innerHTML = queueData.map((item, index) => `
                 <tr class="hover:bg-gray-50">
                     <td class="border border-gray-200 px-2 md:px-4 py-2 md:py-3 text-sm md:text-base mobile-text-sm break-words">${item.name}</td>
-                    <td class="border border-gray-200 px-2 md:px-4 py-2 md:py-3">
+                    <td class="border border-gray-200 px-2 md:px-4 py-2 md:py-3 text-center">
                         <span class="px-2 md:px-3 py-1 rounded-full text-white font-medium text-xs md:text-sm mobile-status ${item.status === 'รับคิวแล้ว' ? 'bg-gray-800' : item.status === 'คิวด่วน' ? 'bg-red-600' : 'bg-green-600'}">
                             ${item.status}
                         </span>
@@ -806,5 +986,5 @@
             }
         });
     </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'999a1ffd646af8dc',t:'MTc2MjMyMjM2NS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'999a7229a40ffd68',t:'MTc2MjMyNTczMS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
