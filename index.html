@@ -114,13 +114,17 @@
  </head>
  <body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen"><!-- หน้าแรก - แสดงข้อมูล -->
   <div id="mainPage" class="container mx-auto px-2 md:px-4 py-4 md:py-8">
-   <div class="bg-white rounded-xl md:rounded-2xl shadow-xl p-4 md:p-8 max-w-4xl mx-auto">
+   <div class="bg-white rounded-xl md:rounded-2xl shadow-xl p-4 md:p-8 max-w-4xl mx-auto relative">
     <div class="text-center mb-4 md:mb-6">
      <div class="text-sm md:text-lg text-gray-600 mobile-text-base" id="currentDate"></div>
      <div class="text-red-600 font-medium mt-1 md:mt-2 text-sm md:text-base mobile-text-sm">
       หมดเวลาคิวเวลา 24.00 น.
      </div>
      <div class="text-2xl md:text-3xl font-bold text-gray-800 mt-2 md:mt-4 mobile-text-2xl" id="currentTime"></div>
+    </div><!-- ปุ่มเข้าสู่ระบบมุมบนขวา -->
+    <div class="absolute top-4 right-4 z-10"><button id="loginButton" onclick="showLogin()" class="bg-white bg-opacity-30 hover:bg-opacity-50 text-gray-700 hover:text-gray-900 p-2 md:p-3 rounded-full shadow-lg backdrop-blur-sm transition-all duration-300 mobile-btn-sm" title="เข้าสู่ระบบแอดมิน">
+      <svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+      </svg></button>
     </div>
     <div class="flex flex-col md:flex-row justify-between items-center mb-4 md:mb-8 gap-3 md:gap-0">
      <div class="flex items-center gap-2 md:gap-4 w-full md:w-auto"><button id="backButtonMain" onclick="goBackToAdmin()" class="hidden bg-gray-600 hover:bg-gray-700 text-white p-2 md:p-3 rounded-lg font-medium transition-colors mobile-btn-sm" title="ย้อนกลับไปหน้าจัดการ">
@@ -132,10 +136,6 @@
        <div class="flex items-center gap-2">
         <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
         </svg><span class="hidden md:inline">ติดตั้งแอป</span>
-       </div></button> <button id="loginButton" onclick="showLogin()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 md:p-3 rounded-lg font-medium transition-colors text-sm mobile-btn" title="เข้าสู่ระบบแอดมิน">
-       <div class="flex items-center gap-2">
-        <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-        </svg><span class="hidden md:inline">แอดมิน</span>
        </div></button>
      </div>
     </div>
@@ -297,6 +297,11 @@
             if (installButton) {
                 installButton.classList.remove('hidden');
             }
+            
+            // แสดงปุ่มติดตั้งแบบ floating สำหรับมือถือ
+            if (isMobileDevice()) {
+                showMobileInstallPrompt();
+            }
         }
 
         // ซ่อนปุ่มติดตั้ง
@@ -348,6 +353,45 @@
             } catch (error) {
                 console.error('Error during app installation:', error);
                 showManualInstallInstructions();
+            }
+        }
+
+        // แสดงข้อความติดตั้งแอปสำหรับมือถือ
+        function showMobileInstallPrompt() {
+            // สร้าง floating notification
+            const notification = document.createElement('div');
+            notification.id = 'installNotification';
+            notification.className = 'fixed bottom-4 left-4 right-4 bg-blue-600 text-white p-4 rounded-lg shadow-lg z-50 flex items-center justify-between animate-pulse';
+            notification.innerHTML = `
+                <div class="flex items-center gap-3">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    <div>
+                        <div class="font-semibold">ติดตั้งแอปลงมือถือ</div>
+                        <div class="text-sm opacity-90">เพื่อใช้งานได้สะดวกขึ้น</div>
+                    </div>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="installApp()" class="bg-white text-blue-600 px-3 py-1 rounded font-medium text-sm">ติดตั้ง</button>
+                    <button onclick="hideMobileInstallPrompt()" class="text-white opacity-75 hover:opacity-100">✕</button>
+                </div>
+            `;
+            
+            // เพิ่มเข้าไปใน body
+            document.body.appendChild(notification);
+            
+            // ซ่อนอัตโนมัติหลัง 10 วินาที
+            setTimeout(() => {
+                hideMobileInstallPrompt();
+            }, 10000);
+        }
+
+        // ซ่อนข้อความติดตั้งมือถือ
+        function hideMobileInstallPrompt() {
+            const notification = document.getElementById('installNotification');
+            if (notification) {
+                notification.remove();
             }
         }
 
@@ -986,5 +1030,5 @@
             }
         });
     </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'999a7229a40ffd68',t:'MTc2MjMyNTczMS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'999a790e179ffd68',t:'MTc2MjMyNjAxMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
