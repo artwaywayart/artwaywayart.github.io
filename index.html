@@ -3,16 +3,32 @@
  <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>ระบบบันทึกข้อมูลรายชื่อคิว</title><!-- PWA Meta Tags -->
+  <title>เพิ่มคิว</title><!-- Favicon -->
+  <link rel="icon" type="image/jpeg" href="https://uppic.cloud/ib/8nXBcU5kYD7PO98_1761230726.jpg">
+  <link rel="shortcut icon" type="image/jpeg" href="https://uppic.cloud/ib/8nXBcU5kYD7PO98_1761230726.jpg"><!-- PWA Meta Tags -->
   <meta name="theme-color" content="#2563eb">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="apple-mobile-web-app-title" content="ระบบคิว">
+  <meta name="apple-mobile-web-app-title" content="เพิ่มคิว">
   <meta name="mobile-web-app-capable" content="yes">
-  <meta name="application-name" content="ระบบคิว"><!-- PWA Icons -->
-  <link rel="icon" type="image/png" sizes="192x192" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgdmlld0JveD0iMCAwIDE5MiAxOTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxOTIiIGhlaWdodD0iMTkyIiByeD0iMjQiIGZpbGw9IiMyNTYzZWIiLz4KPHN2ZyB4PSI0OCIgeT0iNDgiIHdpZHRoPSI5NiIgaGVpZ2h0PSI5NiIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjIiPgo8cGF0aCBkPSJNOSAxMWgzdjEyaDN2LTEyaDNsLTQtOC00IDh6Ii8+CjxwYXRoIGQ9Ik0yMSAzSDNhMiAyIDAgMCAwLTIgMnYxNGEyIDIgMCAwIDAgMiAyaDE4YTIgMiAwIDAgMCAyLTJWNWEyIDIgMCAwIDAtMi0yeiIvPgo8L3N2Zz4KPC9zdmc+">
-  <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgdmlld0JveD0iMCAwIDE5MiAxOTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxOTIiIGhlaWdodD0iMTkyIiByeD0iMjQiIGZpbGw9IiMyNTYzZWIiLz4KPHN2ZyB4PSI0OCIgeT0iNDgiIHdpZHRoPSI5NiIgaGVpZ2h0PSI5NiIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjIiPgo8cGF0aCBkPSJNOSAxMWgzdjEyaDN2LTEyaDNsLTQtOC00IDh6Ii8+CjxwYXRoIGQ9Ik0yMSAzSDNhMiAyIDAgMCAwLTIgMnYxNGEyIDIgMCAwIDAgMiAyaDE4YTIgMiAwIDAgMCAyLTJWNWEyIDIgMCAwIDAtMi0yeiIvPgo8L3N2Zz4KPC9zdmc+"><!-- PWA Manifest -->
-  <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIuC4o+C4sOC4muC4muC4muC4seC4meC4l+C4tuC4geC4guC5ieC4reC4oeC4ueC4peC4o+C4suC4ouC4iuC4t+C5iOC4reC4hOC4tOC4oCIsCiAgInNob3J0X25hbWUiOiAi4Lij4Lia4Lia4LiE4Li04LiuIiwKICAic3RhcnRfdXJsIjogIi8iLAogICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLAogICJiYWNrZ3JvdW5kX2NvbG9yIjogIiNmZmZmZmYiLAogICJ0aGVtZV9jb2xvciI6ICIjMjU2M2ViIiwKICAiaWNvbnMiOiBbCiAgICB7CiAgICAgICJzcmMiOiAiZGF0YTppbWFnZS9zdmcreG1sO2Jhc2U2NCxQSE4yWnlCM2FXUjBhRDBpTVRreUlpQm9aV2xuYUhROUlqRTVNaUlpSUhacFpYZENiM2c5SWpBZ01DQXhPVElnTVRreUlpQm1hV3hzUFNKdWIyNWxJaUI0Yld4dWN6MGlhSFIwY0RvdkwzZDNkeTUzTXk1dmNtY3ZNakF3TUM5emRtY2lQZ28xjcmVqZENCaWRHZ2dQU0pxTVRreUlpQm9aV2xuYUhROUlqRTVNaUlpSUhKNFBTSXlOQ0lnWm1sc2JEMGlJakkxTmpObFlpSXZQZ29nUEhOMlp5QjRQU0kwT0NJZ2VUMGlORGdpSUhkcFpIUm9QU0k1TmlJZ2FHVnBaMmgwUFNJNU5pSWlJSFpwWlhkQ2IzZzlJakFnTUNBeU5DQXlOQ0lnWm1sc2JEMGlibTl1WlNJZ2MzUnliMnRsUFNKM2FHbDBaU0lnYzNSeWIydGxMWGRwWkhSb1BTSXlJajRLUEhCaGRHZ2daRDBpVFRrZ01URm9NM1l4TW1nelkzWXRNVEpvTTJ3dE5DMDRMVFFnT0hvaUx6NEtQSEJoZEdnZ1pEMGlUVEl4SURNZ1NETmhNaUF5SURBZ01DQXdMVElnTW5ZeE5HRXlJRElnTUNBd0lESWdNakJvTVRoaE1pQXlJREFnTUNBd0lESXRNbFkxWVRJZ01pQXdJREF0TWkweWVpSXZQZ284TDNOMlp6NEtQQzl6ZG1jKyIsCiAgICAgICJzaXplcyI6ICIxOTJ4MTkyIiwKICAgICAgInR5cGUiOiAiaW1hZ2Uvc3ZnK3htbCIKICAgIH0sCiAgICB7CiAgICAgICJzcmMiOiAiZGF0YTppbWFnZS9zdmcreG1sO2Jhc2U2NCxQSE4yWnlCM2FXUjBhRDBpTlRFeUlpQm9aV2xuYUhROUlqVXhNaUlpSUhacFpYZENiM2c5SWpBZ01DQTFNVElnTlRFeUlpQm1hV3hzUFNKdWIyNWxJaUI0Yld4dWN6MGlhSFIwY0RvdkwzZDNkeTUzTXk1dmNtY3ZNakF3TUM5emRtY2lQZ28xjcmVqZENCaWRHZ2dQU0kxTVRJaUlHaGxhV2RvZEQwaU5URXlJaUJ5ZUQwaU1qUWlJR1pwYkd3OUlpSXlOVFl6WldJaUx6NEtQSE4yWnlCNFBTSXhNamdpSUhrOUlqRXlPQ0lnZDJsa2RHZzlJakl6TmlJZ2FHVnBaMmgwUFNJeU16WWlJSFpwWlhkQ2IzZzlJakFnTUNBeU5DQXlOQ0lnWm1sc2JEMGlibTl1WlNJZ2MzUnliMnRsUFNKM2FHbDBaU0lnYzNSeWIydGxMWGRwWkhSb1BTSXlJajRLUEhCaGRHZ2daRDBpVFRrZ01URm9NM1l4TW1nelkzWXRNVEpvTTJ3dE5DMDRMVFFnT0hvaUx6NEtQSEJoZEdnZ1pEMGlUVEl4SURNZ1NETmhNaUF5SURBZ01DQXdMVElnTW5ZeE5HRXlJRElnTUNBd0lESWdNakJvTVRoaE1pQXlJREFnTUNBd0lESXRNbFkxWVRJZ01pQXdJREF0TWkweWVpSXZQZ284TDNOMlp6NEtQQzl6ZG1jKyIsCiAgICAgICJzaXplcyI6ICI1MTJ4NTEyIiwKICAgICAgInR5cGUiOiAiaW1hZ2Uvc3ZnK3htbCIKICAgIH0KICBdCn0=">
+  <meta name="application-name" content="เพิ่มคิว">
+  <meta name="msapplication-TileColor" content="#2563eb">
+  <meta name="msapplication-TileImage" content="https://uppic.cloud/ib/8nXBcU5kYD7PO98_1761230726.jpg"><!-- Apple Touch Icons สำหรับ iOS -->
+  <link rel="apple-touch-icon" sizes="57x57" href="https://uppic.cloud/ib/8nXBcU5kYD7PO98_1761230726.jpg">
+  <link rel="apple-touch-icon" sizes="60x60" href="https://uppic.cloud/ib/8nXBcU5kYD7PO98_1761230726.jpg">
+  <link rel="apple-touch-icon" sizes="72x72" href="https://uppic.cloud/ib/8nXBcU5kYD7PO98_1761230726.jpg">
+  <link rel="apple-touch-icon" sizes="76x76" href="https://uppic.cloud/ib/8nXBcU5kYD7PO98_1761230726.jpg">
+  <link rel="apple-touch-icon" sizes="114x114" href="https://uppic.cloud/ib/8nXBcU5kYD7PO98_1761230726.jpg">
+  <link rel="apple-touch-icon" sizes="120x120" href="https://uppic.cloud/ib/8nXBcU5kYD7PO98_1761230726.jpg">
+  <link rel="apple-touch-icon" sizes="144x144" href="https://uppic.cloud/ib/8nXBcU5kYD7PO98_1761230726.jpg">
+  <link rel="apple-touch-icon" sizes="152x152" href="https://uppic.cloud/ib/8nXBcU5kYD7PO98_1761230726.jpg">
+  <link rel="apple-touch-icon" sizes="180x180" href="https://uppic.cloud/ib/8nXBcU5kYD7PO98_1761230726.jpg"><!-- PWA Icons สำหรับ Android -->
+  <link rel="icon" type="image/jpeg" sizes="16x16" href="https://uppic.cloud/ib/8nXBcU5kYD7PO98_1761230726.jpg">
+  <link rel="icon" type="image/jpeg" sizes="32x32" href="https://uppic.cloud/ib/8nXBcU5kYD7PO98_1761230726.jpg">
+  <link rel="icon" type="image/jpeg" sizes="96x96" href="https://uppic.cloud/ib/8nXBcU5kYD7PO98_1761230726.jpg">
+  <link rel="icon" type="image/jpeg" sizes="192x192" href="https://uppic.cloud/ib/8nXBcU5kYD7PO98_1761230726.jpg">
+  <link rel="icon" type="image/jpeg" sizes="512x512" href="https://uppic.cloud/ib/8nXBcU5kYD7PO98_1761230726.jpg"><!-- PWA Manifest -->
+  <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIuC5gOC4nuC4tOC5iOC4oeC4hOC4tOC4oCIsCiAgInNob3J0X25hbWUiOiAi4LmA4Lie4Li04LmI4Lih4LiE4Li04LiuIiwKICAic3RhcnRfdXJsIjogIi8iLAogICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLAogICJiYWNrZ3JvdW5kX2NvbG9yIjogIiNmZmZmZmYiLAogICJ0aGVtZV9jb2xvciI6ICIjMjU2M2ViIiwKICAib3JpZW50YXRpb24iOiAicG9ydHJhaXQiLAogICJjYXRlZ29yeSI6IFsicHJvZHVjdGl2aXR5IiwgInV0aWxpdGllcyJdLAogICJpY29ucyI6IFsKICAgIHsKICAgICAgInNyYyI6ICJodHRwczovL3VwcGljLmNsb3VkL2liLzhuWEJjVTVrWUQ3UE85OF8xNzYxMjMwNzI2LmpwZyIsCiAgICAgICJzaXplcyI6ICIxOTJ4MTkyIiwKICAgICAgInR5cGUiOiAiaW1hZ2UvanBlZyIsCiAgICAgICJwdXJwb3NlIjogImFueSIKICAgIH0sCiAgICB7CiAgICAgICJzcmMiOiAiaHR0cHM6Ly91cHBpYy5jbG91ZC9pYi84blhCY1U1a1lEN1BPOThfMTc2MTIzMDcyNi5qcGciLAogICAgICAic2l6ZXMiOiAiNTEyeDUxMiIsCiAgICAgICJ0eXBlIjogImltYWdlL2pwZWciLAogICAgICAicHVycG9zZSI6ICJhbnkiCiAgICB9LAogICAgewogICAgICAic3JjIjogImh0dHBzOi8vdXBwaWMuY2xvdWQvaWIvOG5YQmNVNWtZRDdQTzk4XzE3NjEyMzA3MjYuanBnIiwKICAgICAgInNpemVzIjogIjE5MngxOTIiLAogICAgICAidHlwZSI6ICJpbWFnZS9qcGVnIiwKICAgICAgInB1cnBvc2UiOiAibWFza2FibGUiCiAgICB9CiAgXQp9">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <style>
@@ -272,7 +288,6 @@
             window.addEventListener('appinstalled', (e) => {
                 console.log('PWA installed successfully');
                 hideInstallButton();
-                hideMobileInstallPrompt();
                 
                 const toast = Swal.mixin({
                     toast: true,
@@ -292,7 +307,6 @@
             if (isMobileDevice() && !isAppInstalled()) {
                 setTimeout(() => {
                     showInstallButton();
-                    showMobileInstallPrompt();
                 }, 2000); // แสดงหลัง 2 วินาที
             }
         }
@@ -318,11 +332,6 @@
             const installButton = document.getElementById('installButton');
             if (installButton) {
                 installButton.classList.remove('hidden');
-            }
-            
-            // แสดงปุ่มติดตั้งแบบ floating สำหรับมือถือ
-            if (isMobileDevice()) {
-                showMobileInstallPrompt();
             }
         }
 
@@ -390,88 +399,7 @@
             showManualInstallInstructions();
         }
 
-        // แสดงข้อความติดตั้งแอปสำหรับมือถือ
-        function showMobileInstallPrompt() {
-            // ตรวจสอบว่ามี notification อยู่แล้วหรือไม่
-            if (document.getElementById('installNotification')) {
-                return;
-            }
 
-            // สร้าง floating notification
-            const notification = document.createElement('div');
-            notification.id = 'installNotification';
-            notification.className = 'fixed bottom-4 left-4 right-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4 rounded-xl shadow-2xl z-50 animate-bounce';
-            notification.style.animation = 'slideUp 0.5s ease-out';
-            notification.innerHTML = `
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-3">
-                        <div class="bg-white bg-opacity-20 p-2 rounded-full">
-                            📱
-                        </div>
-                        <div>
-                            <div class="font-bold text-lg">ติดตั้งแอปฟรี!</div>
-                            <div class="text-sm opacity-90">เข้าถึงได้ง่าย ไม่ต้องเปิดเบราว์เซอร์</div>
-                        </div>
-                    </div>
-                    <div class="flex flex-col gap-2 ml-2">
-                        <button onclick="installApp()" class="bg-white text-blue-600 px-4 py-2 rounded-lg font-bold text-sm shadow-lg hover:shadow-xl transition-all">
-                            ติดตั้งเลย! 🚀
-                        </button>
-                        <button onclick="hideMobileInstallPrompt()" class="text-white opacity-75 hover:opacity-100 text-xs">
-                            ไว้ทีหลัง ✕
-                        </button>
-                    </div>
-                </div>
-            `;
-            
-            // เพิ่ม CSS animation
-            const style = document.createElement('style');
-            style.textContent = `
-                @keyframes slideUp {
-                    from {
-                        transform: translateY(100%);
-                        opacity: 0;
-                    }
-                    to {
-                        transform: translateY(0);
-                        opacity: 1;
-                    }
-                }
-                
-                @keyframes slideDown {
-                    from {
-                        transform: translateY(0);
-                        opacity: 1;
-                    }
-                    to {
-                        transform: translateY(100%);
-                        opacity: 0;
-                    }
-                }
-            `;
-            document.head.appendChild(style);
-            
-            // เพิ่มเข้าไปใน body
-            document.body.appendChild(notification);
-            
-            // ซ่อนอัตโนมัติหลัง 15 วินาที
-            setTimeout(() => {
-                hideMobileInstallPrompt();
-            }, 15000);
-        }
-
-        // ซ่อนข้อความติดตั้งมือถือ
-        function hideMobileInstallPrompt() {
-            const notification = document.getElementById('installNotification');
-            if (notification) {
-                notification.style.animation = 'slideDown 0.3s ease-in';
-                setTimeout(() => {
-                    if (notification.parentNode) {
-                        notification.remove();
-                    }
-                }, 300);
-            }
-        }
 
         // แสดงคำแนะนำการติดตั้งแบบ manual
         function showManualInstallInstructions() {
@@ -574,7 +502,6 @@
         function markAsInstalled() {
             localStorage.setItem('appInstalled', 'true');
             hideInstallButton();
-            hideMobileInstallPrompt();
             Swal.close();
             
             const toast = Swal.mixin({
@@ -1175,5 +1102,5 @@
             }
         });
     </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'999a7f055081fd68',t:'MTc2MjMyNjI1Ny4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'999a875b6267fd68',t:'MTc2MjMyNjU5OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
