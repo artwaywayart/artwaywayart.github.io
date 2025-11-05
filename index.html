@@ -243,18 +243,28 @@
         function setupPWA() {
             // ตรวจสอบว่าเบราว์เซอร์รองรับ PWA หรือไม่
             if ('serviceWorker' in navigator) {
-                // ลงทะเบียน Service Worker (ไม่จำเป็นสำหรับการติดตั้งพื้นฐาน)
                 console.log('PWA supported');
+            }
+
+            // ตรวจสอบว่าแอปถูกติดตั้งแล้วหรือไม่
+            if (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) {
+                console.log('App is running in standalone mode');
+                hideInstallButton();
+                return;
+            }
+
+            // สำหรับ iOS Safari - ตรวจสอบว่าเป็น standalone mode หรือไม่
+            if (window.navigator.standalone === true) {
+                console.log('App is running in iOS standalone mode');
+                hideInstallButton();
+                return;
             }
 
             // ฟังเหตุการณ์ beforeinstallprompt
             window.addEventListener('beforeinstallprompt', (e) => {
                 console.log('PWA install prompt available');
-                // ป้องกันการแสดง prompt อัตโนมัติ
                 e.preventDefault();
-                // เก็บ event ไว้ใช้ภายหลัง
                 deferredPrompt = e;
-                // แสดงปุ่มติดตั้ง
                 showInstallButton();
             });
 
@@ -262,8 +272,8 @@
             window.addEventListener('appinstalled', (e) => {
                 console.log('PWA installed successfully');
                 hideInstallButton();
+                hideMobileInstallPrompt();
                 
-                // แสดงข้อความแจ้งเตือนว่าติดตั้งสำเร็จ
                 const toast = Swal.mixin({
                     toast: true,
                     position: 'top-end',
@@ -278,17 +288,29 @@
                 });
             });
 
-            // ตรวจสอบว่าแอปถูกติดตั้งแล้วหรือไม่
-            if (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) {
-                console.log('App is running in standalone mode');
-                hideInstallButton();
+            // แสดงปุ่มติดตั้งสำหรับมือถือทันที (ไม่รอ beforeinstallprompt)
+            if (isMobileDevice() && !isAppInstalled()) {
+                setTimeout(() => {
+                    showInstallButton();
+                    showMobileInstallPrompt();
+                }, 2000); // แสดงหลัง 2 วินาที
             }
+        }
 
-            // สำหรับ iOS Safari - ตรวจสอบว่าเป็น standalone mode หรือไม่
-            if (window.navigator.standalone === true) {
-                console.log('App is running in iOS standalone mode');
-                hideInstallButton();
+        // ตรวจสอบว่าแอปถูกติดตั้งแล้วหรือไม่
+        function isAppInstalled() {
+            // ตรวจสอบ standalone mode
+            if (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) {
+                return true;
             }
+            
+            // ตรวจสอบ iOS standalone
+            if (window.navigator.standalone === true) {
+                return true;
+            }
+            
+            // ตรวจสอบจาก localStorage
+            return localStorage.getItem('appInstalled') === 'true';
         }
 
         // แสดงปุ่มติดตั้ง
@@ -314,84 +336,140 @@
 
         // ฟังก์ชันติดตั้งแอป
         async function installApp() {
-            if (!deferredPrompt) {
-                // ถ้าไม่มี prompt ให้แสดงคำแนะนำการติดตั้งแบบ manual
-                showManualInstallInstructions();
+            // ตรวจสอบว่าแอปถูกติดตั้งแล้วหรือไม่
+            if (isAppInstalled()) {
+                const toast = Swal.mixin({
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 2000,
+                    timerProgressBar: true
+                });
+                toast.fire({
+                    icon: 'info',
+                    title: 'แอปถูกติดตั้งแล้ว'
+                });
                 return;
             }
 
-            try {
-                // แสดง install prompt
-                deferredPrompt.prompt();
-                
-                // รอผลลัพธ์จากผู้ใช้
-                const { outcome } = await deferredPrompt.userChoice;
-                
-                if (outcome === 'accepted') {
-                    console.log('User accepted the install prompt');
+            // ลองใช้ beforeinstallprompt ก่อน
+            if (deferredPrompt) {
+                try {
+                    deferredPrompt.prompt();
+                    const { outcome } = await deferredPrompt.userChoice;
                     
-                    // แสดงข้อความกำลังติดตั้ง
-                    const toast = Swal.mixin({
-                        toast: true,
-                        position: 'top-end',
-                        showConfirmButton: false,
-                        timer: 2000,
-                        timerProgressBar: true
-                    });
-                    toast.fire({
-                        icon: 'info',
-                        title: 'กำลังติดตั้งแอป...'
-                    });
-                } else {
-                    console.log('User dismissed the install prompt');
+                    if (outcome === 'accepted') {
+                        console.log('User accepted the install prompt');
+                        localStorage.setItem('appInstalled', 'true');
+                        
+                        const toast = Swal.mixin({
+                            toast: true,
+                            position: 'top-end',
+                            showConfirmButton: false,
+                            timer: 2000,
+                            timerProgressBar: true
+                        });
+                        toast.fire({
+                            icon: 'info',
+                            title: 'กำลังติดตั้งแอป...'
+                        });
+                    } else {
+                        console.log('User dismissed the install prompt');
+                    }
+                    
+                    deferredPrompt = null;
+                    hideInstallButton();
+                    return;
+                    
+                } catch (error) {
+                    console.error('Error during app installation:', error);
                 }
-                
-                // ล้าง prompt
-                deferredPrompt = null;
-                hideInstallButton();
-                
-            } catch (error) {
-                console.error('Error during app installation:', error);
-                showManualInstallInstructions();
             }
+
+            // ถ้าไม่มี beforeinstallprompt หรือเกิดข้อผิดพลาด ให้แสดงคำแนะนำ manual
+            showManualInstallInstructions();
         }
 
         // แสดงข้อความติดตั้งแอปสำหรับมือถือ
         function showMobileInstallPrompt() {
+            // ตรวจสอบว่ามี notification อยู่แล้วหรือไม่
+            if (document.getElementById('installNotification')) {
+                return;
+            }
+
             // สร้าง floating notification
             const notification = document.createElement('div');
             notification.id = 'installNotification';
-            notification.className = 'fixed bottom-4 left-4 right-4 bg-blue-600 text-white p-4 rounded-lg shadow-lg z-50 flex items-center justify-between animate-pulse';
+            notification.className = 'fixed bottom-4 left-4 right-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4 rounded-xl shadow-2xl z-50 animate-bounce';
+            notification.style.animation = 'slideUp 0.5s ease-out';
             notification.innerHTML = `
-                <div class="flex items-center gap-3">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                    </svg>
-                    <div>
-                        <div class="font-semibold">ติดตั้งแอปลงมือถือ</div>
-                        <div class="text-sm opacity-90">เพื่อใช้งานได้สะดวกขึ้น</div>
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="bg-white bg-opacity-20 p-2 rounded-full">
+                            📱
+                        </div>
+                        <div>
+                            <div class="font-bold text-lg">ติดตั้งแอปฟรี!</div>
+                            <div class="text-sm opacity-90">เข้าถึงได้ง่าย ไม่ต้องเปิดเบราว์เซอร์</div>
+                        </div>
+                    </div>
+                    <div class="flex flex-col gap-2 ml-2">
+                        <button onclick="installApp()" class="bg-white text-blue-600 px-4 py-2 rounded-lg font-bold text-sm shadow-lg hover:shadow-xl transition-all">
+                            ติดตั้งเลย! 🚀
+                        </button>
+                        <button onclick="hideMobileInstallPrompt()" class="text-white opacity-75 hover:opacity-100 text-xs">
+                            ไว้ทีหลัง ✕
+                        </button>
                     </div>
                 </div>
-                <div class="flex gap-2">
-                    <button onclick="installApp()" class="bg-white text-blue-600 px-3 py-1 rounded font-medium text-sm">ติดตั้ง</button>
-                    <button onclick="hideMobileInstallPrompt()" class="text-white opacity-75 hover:opacity-100">✕</button>
-                </div>
             `;
+            
+            // เพิ่ม CSS animation
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes slideUp {
+                    from {
+                        transform: translateY(100%);
+                        opacity: 0;
+                    }
+                    to {
+                        transform: translateY(0);
+                        opacity: 1;
+                    }
+                }
+                
+                @keyframes slideDown {
+                    from {
+                        transform: translateY(0);
+                        opacity: 1;
+                    }
+                    to {
+                        transform: translateY(100%);
+                        opacity: 0;
+                    }
+                }
+            `;
+            document.head.appendChild(style);
             
             // เพิ่มเข้าไปใน body
             document.body.appendChild(notification);
             
-            // ซ่อนอัตโนมัติหลัง 10 วินาที
+            // ซ่อนอัตโนมัติหลัง 15 วินาที
             setTimeout(() => {
                 hideMobileInstallPrompt();
-            }, 10000);
+            }, 15000);
         }
 
         // ซ่อนข้อความติดตั้งมือถือ
         function hideMobileInstallPrompt() {
             const notification = document.getElementById('installNotification');
             if (notification) {
-                notification.remove();
+                notification.style.animation = 'slideDown 0.3s ease-in';
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.remove();
+                    }
+                }, 300);
             }
         }
 
@@ -399,50 +477,117 @@
         function showManualInstallInstructions() {
             const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
             const isAndroid = /Android/.test(navigator.userAgent);
+            const isChrome = /Chrome/.test(navigator.userAgent);
+            const isSafari = /Safari/.test(navigator.userAgent) && !isChrome;
             
             let instructions = '';
+            let title = 'ติดตั้งแอปลงมือถือ';
             
-            if (isIOS) {
+            if (isIOS && isSafari) {
                 instructions = `
-                    <div class="text-left">
-                        <p class="mb-3"><strong>วิธีติดตั้งบน iOS:</strong></p>
-                        <ol class="list-decimal list-inside space-y-2 text-sm">
-                            <li>กดปุ่ม "แชร์" (ไอคอนสี่เหลี่ยมพร้อมลูกศร) ที่แถบล่าง</li>
-                            <li>เลื่อนลงและเลือก "เพิ่มที่หน้าจอหลัก"</li>
-                            <li>กด "เพิ่ม" เพื่อยืนยัน</li>
-                        </ol>
+                    <div class="text-left space-y-4">
+                        <div class="bg-blue-50 p-3 rounded-lg">
+                            <p class="font-semibold text-blue-800 mb-2">📱 วิธีติดตั้งบน iPhone/iPad (Safari):</p>
+                            <ol class="list-decimal list-inside space-y-2 text-sm text-blue-700">
+                                <li>กดปุ่ม <strong>"แชร์"</strong> 📤 ที่แถบล่างของ Safari</li>
+                                <li>เลื่อนลงหา <strong>"เพิ่มที่หน้าจอหลัก"</strong> ➕</li>
+                                <li>กด <strong>"เพิ่ม"</strong> เพื่อยืนยัน</li>
+                                <li>แอปจะปรากฏบนหน้าจอหลักของคุณ! 🎉</li>
+                            </ol>
+                        </div>
+                        <div class="text-center">
+                            <button onclick="markAsInstalled()" class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm">
+                                ✅ ติดตั้งเรียบร้อยแล้ว
+                            </button>
+                        </div>
+                    </div>
+                `;
+            } else if (isAndroid && isChrome) {
+                instructions = `
+                    <div class="text-left space-y-4">
+                        <div class="bg-green-50 p-3 rounded-lg">
+                            <p class="font-semibold text-green-800 mb-2">🤖 วิธีติดตั้งบน Android (Chrome):</p>
+                            <ol class="list-decimal list-inside space-y-2 text-sm text-green-700">
+                                <li>กดปุ่ม <strong>"เมนู"</strong> ⋮ ที่มุมขวาบน</li>
+                                <li>เลือก <strong>"เพิ่มที่หน้าจอหลัก"</strong> หรือ <strong>"ติดตั้งแอป"</strong></li>
+                                <li>กด <strong>"ติดตั้ง"</strong> เพื่อยืนยัน</li>
+                                <li>แอปจะติดตั้งลงในมือถือของคุณ! 🎉</li>
+                            </ol>
+                        </div>
+                        <div class="text-center">
+                            <button onclick="markAsInstalled()" class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm">
+                                ✅ ติดตั้งเรียบร้อยแล้ว
+                            </button>
+                        </div>
                     </div>
                 `;
             } else if (isAndroid) {
                 instructions = `
-                    <div class="text-left">
-                        <p class="mb-3"><strong>วิธีติดตั้งบน Android:</strong></p>
-                        <ol class="list-decimal list-inside space-y-2 text-sm">
-                            <li>กดปุ่ม "เมนู" (จุด 3 จุด) ที่มุมขวาบน</li>
-                            <li>เลือก "เพิ่มที่หน้าจอหลัก" หรือ "ติดตั้งแอป"</li>
-                            <li>กด "ติดตั้ง" เพื่อยืนยัน</li>
-                        </ol>
+                    <div class="text-left space-y-4">
+                        <div class="bg-orange-50 p-3 rounded-lg">
+                            <p class="font-semibold text-orange-800 mb-2">📱 วิธีติดตั้งบน Android:</p>
+                            <ol class="list-decimal list-inside space-y-2 text-sm text-orange-700">
+                                <li>กดปุ่ม <strong>"เมนู"</strong> ของเบราว์เซอร์</li>
+                                <li>มองหา <strong>"เพิ่มที่หน้าจอหลัก"</strong> หรือ <strong>"ติดตั้งแอป"</strong></li>
+                                <li>ทำตามขั้นตอนเพื่อติดตั้ง</li>
+                            </ol>
+                            <p class="text-xs mt-2 text-orange-600">💡 แนะนำให้ใช้ Chrome เพื่อประสบการณ์ที่ดีที่สุด</p>
+                        </div>
+                        <div class="text-center">
+                            <button onclick="markAsInstalled()" class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm">
+                                ✅ ติดตั้งเรียบร้อยแล้ว
+                            </button>
+                        </div>
                     </div>
                 `;
             } else {
                 instructions = `
-                    <div class="text-left">
-                        <p class="mb-3"><strong>วิธีติดตั้งแอป:</strong></p>
-                        <p class="text-sm">กดปุ่มเมนูของเบราว์เซอร์และมองหา "ติดตั้งแอป" หรือ "เพิ่มที่หน้าจอหลัก"</p>
+                    <div class="text-left space-y-4">
+                        <div class="bg-gray-50 p-3 rounded-lg">
+                            <p class="font-semibold text-gray-800 mb-2">💻 วิธีติดตั้งแอป:</p>
+                            <p class="text-sm text-gray-700">กดปุ่มเมนูของเบราว์เซอร์และมองหา <strong>"ติดตั้งแอป"</strong> หรือ <strong>"เพิ่มที่หน้าจอหลัก"</strong></p>
+                            <p class="text-xs mt-2 text-gray-600">💡 รองรับดีที่สุดบน Chrome และ Safari</p>
+                        </div>
+                        <div class="text-center">
+                            <button onclick="markAsInstalled()" class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm">
+                                ✅ ติดตั้งเรียบร้อยแล้ว
+                            </button>
+                        </div>
                     </div>
                 `;
             }
             
             Swal.fire({
-                title: 'ติดตั้งแอปลงมือถือ',
+                title: title,
                 html: instructions,
                 icon: 'info',
-                confirmButtonText: 'เข้าใจแล้ว',
-                confirmButtonColor: '#2563eb',
-                width: '90%',
+                showConfirmButton: false,
+                showCloseButton: true,
+                width: '95%',
                 customClass: {
                     popup: 'text-sm'
                 }
+            });
+        }
+
+        // ฟังก์ชันทำเครื่องหมายว่าติดตั้งแล้ว
+        function markAsInstalled() {
+            localStorage.setItem('appInstalled', 'true');
+            hideInstallButton();
+            hideMobileInstallPrompt();
+            Swal.close();
+            
+            const toast = Swal.mixin({
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true
+            });
+            toast.fire({
+                icon: 'success',
+                title: 'ขอบคุณ! 🎉',
+                text: 'หวังว่าคุณจะชอบใช้แอปนี้'
             });
         }
 
@@ -1030,5 +1175,5 @@
             }
         });
     </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'999a790e179ffd68',t:'MTc2MjMyNjAxMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'999a7f055081fd68',t:'MTc2MjMyNjI1Ny4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
