@@ -128,8 +128,8 @@
      <table class="w-full border-collapse mobile-table">
       <thead>
        <tr class="bg-gray-50">
-        <th class="border border-gray-200 px-2 md:px-4 py-2 md:py-3 text-left font-semibold text-gray-700 text-sm md:text-base mobile-text-sm">ชื่อเฟสบุ๊ค</th>
-        <th class="border border-gray-200 px-2 md:px-4 py-2 md:py-3 text-left font-semibold text-gray-700 text-sm md:text-base mobile-text-sm">สถานะ</th>
+        <th class="border border-gray-200 px-2 md:px-4 py-2 md:py-3 text-center font-semibold text-gray-700 text-sm md:text-base mobile-text-sm">ชื่อเฟสบุ๊ค</th>
+        <th class="border border-gray-200 px-2 md:px-4 py-2 md:py-3 text-center font-semibold text-gray-700 text-sm md:text-base mobile-text-sm">สถานะ</th>
        </tr>
       </thead>
       <tbody id="dataTable"><!-- ข้อมูลจะแสดงที่นี่ -->
@@ -185,9 +185,9 @@
      <table class="w-full border-collapse mobile-table">
       <thead>
        <tr class="bg-gray-50">
-        <th class="border border-gray-200 px-2 md:px-4 py-2 md:py-3 text-left font-semibold text-gray-700 text-sm md:text-base mobile-text-sm">ชื่อเฟสบุ๊ค</th>
-        <th class="border border-gray-200 px-2 md:px-4 py-2 md:py-3 text-left font-semibold text-gray-700 text-sm md:text-base mobile-text-sm">สถานะ</th>
-        <th class="border border-gray-200 px-2 md:px-4 py-2 md:py-3 text-left font-semibold text-gray-700 text-sm md:text-base mobile-text-sm">จัดการ</th>
+        <th class="border border-gray-200 px-2 md:px-4 py-2 md:py-3 text-center font-semibold text-gray-700 text-sm md:text-base mobile-text-sm">ชื่อเฟสบุ๊ค</th>
+        <th class="border border-gray-200 px-2 md:px-4 py-2 md:py-3 text-center font-semibold text-gray-700 text-sm md:text-base mobile-text-sm">สถานะ</th>
+        <th class="border border-gray-200 px-2 md:px-4 py-2 md:py-3 text-center font-semibold text-gray-700 text-sm md:text-base mobile-text-sm">จัดการ</th>
        </tr>
       </thead>
       <tbody id="adminDataTable"><!-- ข้อมูลจะแสดงที่นี่ -->
@@ -211,9 +211,21 @@
         window.onload = function() {
             displayCurrentDate();
             updateClock();
-            loadDataFast(); // ใช้ฟังก์ชันโหลดเร็ว
+            
+            // โหลดข้อมูลแบบเร็วสำหรับมือถือ
+            if (isMobileDevice()) {
+                loadDataInstant(); // โหลดทันทีสำหรับมือถือ
+            } else {
+                loadDataFast(); // ใช้ฟังก์ชันโหลดเร็ว
+            }
+            
             checkLoginStatus();
         };
+
+        // ตรวจสอบว่าเป็นอุปกรณ์มือถือหรือไม่
+        function isMobileDevice() {
+            return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
+        }
 
         // ฟังก์ชันตรวจสอบสถานะล็อกอิน
         function checkLoginStatus() {
@@ -273,6 +285,32 @@
             }, 3000);
         }
 
+        // ฟังก์ชันโหลดข้อมูลทันทีสำหรับมือถือ (ไม่รอ timeout)
+        function loadDataInstant() {
+            // แสดงข้อมูลจาก cache ก่อน (ถ้ามี)
+            const cachedData = localStorage.getItem('queueDataCache');
+            if (cachedData) {
+                try {
+                    queueData = JSON.parse(cachedData);
+                    displayData();
+                } catch (e) {
+                    console.log('ไม่สามารถโหลด cache ได้');
+                }
+            }
+
+            // โหลดข้อมูลใหม่จาก server
+            const script = document.createElement('script');
+            script.src = SCRIPT_URL + '?callback=handleLoadDataWithCache&action=load&mobile=1&' + new Date().getTime();
+            document.head.appendChild(script);
+            
+            // ลบ script element หลังจากใช้งาน
+            setTimeout(() => {
+                if (script.parentNode) {
+                    script.parentNode.removeChild(script);
+                }
+            }, 2000);
+        }
+
         // ฟังก์ชันโหลดข้อมูลจาก Google Sheets
         function loadData(showLoading = true) {
             if (showLoading) {
@@ -300,7 +338,11 @@
         // รีเฟรชข้อมูลทุก 6 วินาที (เฉพาะหน้าแรก)
         setInterval(() => {
             if (!document.getElementById('mainPage').classList.contains('hidden')) {
-                loadDataFast(); // ใช้ฟังก์ชันโหลดเร็ว
+                if (isMobileDevice()) {
+                    loadDataInstant(); // ใช้ฟังก์ชันโหลดทันทีสำหรับมือถือ
+                } else {
+                    loadDataFast(); // ใช้ฟังก์ชันโหลดเร็ว
+                }
             }
         }, 6000);
 
@@ -317,6 +359,45 @@
             } else {
                 console.log('ไม่สามารถโหลดข้อมูลได้:', data);
                 // แสดงข้อมูลเปล่าถ้าโหลดไม่ได้
+                queueData = [];
+                displayData();
+            }
+        }
+
+        // ฟังก์ชันจัดการข้อมูลพร้อม cache สำหรับมือถือ
+        function handleLoadDataWithCache(data) {
+            if (Swal.isVisible()) {
+                Swal.close();
+            }
+            
+            if (data && data.success) {
+                queueData = data.data || [];
+                
+                // บันทึกข้อมูลลง cache สำหรับมือถือ
+                try {
+                    localStorage.setItem('queueDataCache', JSON.stringify(queueData));
+                    localStorage.setItem('queueDataCacheTime', new Date().getTime().toString());
+                } catch (e) {
+                    console.log('ไม่สามารถบันทึก cache ได้');
+                }
+                
+                displayData();
+                console.log('โหลดข้อมูลสำเร็จ (มือถือ):', queueData.length, 'รายการ');
+            } else {
+                console.log('ไม่สามารถโหลดข้อมูลได้:', data);
+                // ใช้ข้อมูลจาก cache ถ้าโหลดไม่ได้
+                const cachedData = localStorage.getItem('queueDataCache');
+                if (cachedData) {
+                    try {
+                        queueData = JSON.parse(cachedData);
+                        displayData();
+                        console.log('ใช้ข้อมูลจาก cache');
+                        return;
+                    } catch (e) {
+                        console.log('ไม่สามารถใช้ cache ได้');
+                    }
+                }
+                // แสดงข้อมูลเปล่าถ้าไม่มี cache
                 queueData = [];
                 displayData();
             }
@@ -725,5 +806,5 @@
             }
         });
     </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'999a15db554c76b5',t:'MTc2MjMyMTk1MC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'999a1ffd646af8dc',t:'MTc2MjMyMjM2NS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
